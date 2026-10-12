@@ -1,0 +1,571 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   BSBRA design tokens
+   Quiet, neutral surfaces: ink for primary actions, one blue for links.
+   Light is the default; visitors can opt into dark (html[data-theme="dark"]),
+   remembered per browser by the theme toggle.
+   ========================================================================== */
+
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #f5f5f7;
+  --bg-muted: #ebebee;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --glass: rgba(255, 255, 255, 0.78);
+  --glass-strong: rgba(255, 255, 255, 0.94);
+
+  --fg: #1d1d1f;
+  --fg-muted: #424245;
+  --fg-subtle: #6e6e73;
+  --fg-faint: #86868b;
+
+  --line: rgba(0, 0, 0, 0.08);
+  --line-strong: rgba(0, 0, 0, 0.15);
+
+  /* "Brand" is the action colour: ink on light, paper on dark. */
+  --brand: #1d1d1f;
+  --brand-strong: #000000;
+  --brand-fg: #ffffff;
+  --brand-soft: rgba(0, 0, 0, 0.045);
+  --accent: #0071e3;
+  --accent-soft: rgba(0, 113, 227, 0.08);
+  --link: #0066cc;
+  --focus: rgba(0, 113, 227, 0.55);
+
+  /* Ink — reserved for the occasional dark tile. */
+  --ink: #161617;
+  --ink-2: #1d1d1f;
+  --ink-fg: #f5f5f7;
+  --ink-muted: rgba(245, 245, 247, 0.62);
+  --ink-line: rgba(255, 255, 255, 0.12);
+
+  --ok: #1d8348;
+  --ok-soft: rgba(29, 131, 72, 0.09);
+  --warn: #9a5b00;
+  --warn-soft: rgba(154, 91, 0, 0.09);
+  --danger: #d70015;
+  --danger-soft: rgba(215, 0, 21, 0.07);
+  --info: #0071e3;
+  --info-soft: rgba(0, 113, 227, 0.08);
+
+  /* Data visualisation — fixed categorical order, validated for CVD separation */
+  --chart-1: #3a6fe0;
+  --chart-2: #008f7a;
+  --chart-3: #d17a00;
+  --chart-4: #9b59e6;
+  --chart-grid: rgba(0, 0, 0, 0.07);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.04), 0 12px 32px -8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 30px 70px -20px rgba(0, 0, 0, 0.18), 0 10px 24px -12px rgba(0, 0, 0, 0.08);
+
+  --header-h: 52px;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #000000;
+  --bg-subtle: #0f0f10;
+  --bg-muted: #1c1c1e;
+  --surface: #161617;
+  --surface-raised: #1c1c1e;
+  --glass: rgba(18, 18, 19, 0.74);
+  --glass-strong: rgba(18, 18, 19, 0.92);
+
+  --fg: #f5f5f7;
+  --fg-muted: #d2d2d7;
+  --fg-subtle: #a1a1a6;
+  --fg-faint: #86868b;
+
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.2);
+
+  --brand: #f5f5f7;
+  --brand-strong: #ffffff;
+  --brand-fg: #000000;
+  --brand-soft: rgba(255, 255, 255, 0.07);
+  --accent: #2997ff;
+  --accent-soft: rgba(41, 151, 255, 0.14);
+  --link: #2997ff;
+  --focus: rgba(41, 151, 255, 0.6);
+
+  --ink: #1c1c1e;
+  --ink-2: #242426;
+
+  --ok: #30d158;
+  --ok-soft: rgba(48, 209, 88, 0.14);
+  --warn: #ffb340;
+  --warn-soft: rgba(255, 179, 64, 0.14);
+  --danger: #ff453a;
+  --danger-soft: rgba(255, 69, 58, 0.14);
+  --info: #2997ff;
+  --info-soft: rgba(41, 151, 255, 0.15);
+
+  --chart-1: #5a8cf5;
+  --chart-2: #1fa585;
+  --chart-3: #c98418;
+  --chart-4: #9d7cec;
+  --chart-grid: rgba(255, 255, 255, 0.09);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 12px 32px -8px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 30px 70px -20px rgba(0, 0, 0, 0.8);
+  color-scheme: dark;
+}
+
+/* The bundled contour artwork is drawn for light grounds; in dark mode the pale
+   pieces are inverted (hue preserved) so they sit quietly on black. Uploaded
+   photographs are never touched. */
+:root[data-theme="dark"] img[src*="/art/"]:not([src*="/art/current"]):not([src*="/art/dusk"]):not([src*="/art/drift"]) {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92);
+}
+
+/* Theme switches are instant: no element animates its colours mid-swap. */
+:root[data-theme-switching] *,
+:root[data-theme-switching] *::before,
+:root[data-theme-switching] *::after {
+  transition: none !important;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-bg-muted: var(--bg-muted);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-fg-faint: var(--fg-faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-fg: var(--brand-fg);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-link: var(--link);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-fg: var(--ink-fg);
+  --color-ink-muted: var(--ink-muted);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+
+  --font-sans: var(--font-flex), var(--font-bengali), "Noto Sans Bengali", "Nirmala UI", system-ui, -apple-system,
+    "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --shadow-soft: var(--shadow-md);
+  --shadow-float: var(--shadow-lg);
+
+  --ease-apple: cubic-bezier(0.28, 0.11, 0.32, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --radius-card: 1.25rem;
+  --radius-tile: 1.75rem;
+
+  --animate-fade-in: fade-in 0.5s var(--ease-out-quint) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    scroll-padding-top: calc(var(--header-h) + 16px);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem; /* 17px */
+    line-height: 1.5;
+    letter-spacing: -0.006em;
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "kern", "liga", "calt";
+  }
+
+  /* Bangla glyphs have tall ascenders and conjuncts: no negative tracking, looser leading. */
+  :lang(bn) body,
+  :lang(bn) {
+    letter-spacing: 0;
+  }
+  :lang(bn) body {
+    line-height: 1.65;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--fg);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img,
+  svg,
+  video {
+    display: block;
+  }
+
+  hr {
+    border-color: var(--line);
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+    letter-spacing: inherit;
+  }
+
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ==========================================================================
+   Typography scale (size-specific tracking & leading)
+   ========================================================================== */
+
+@utility text-display {
+  font-size: clamp(3rem, 7.4vw, 6.5rem);
+  line-height: 1;
+  letter-spacing: -0.036em;
+  font-weight: 600;
+  &:lang(bn) {
+    letter-spacing: -0.005em;
+    line-height: 1.18;
+  }
+}
+
+@utility text-page-title {
+  font-size: clamp(2.5rem, 5.4vw, 4.5rem);
+  line-height: 1.03;
+  letter-spacing: -0.033em;
+  font-weight: 600;
+  &:lang(bn) {
+    letter-spacing: 0;
+    line-height: 1.2;
+  }
+}
+
+@utility text-headline {
+  font-size: clamp(2.25rem, 4.6vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  &:lang(bn) {
+    letter-spacing: 0;
+    line-height: 1.22;
+  }
+}
+
+@utility text-title {
+  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+  line-height: 1.12;
+  letter-spacing: -0.022em;
+  font-weight: 600;
+  &:lang(bn) {
+    letter-spacing: 0;
+    line-height: 1.3;
+  }
+}
+
+@utility text-lede {
+  font-size: clamp(1.1875rem, 1.5vw, 1.4375rem);
+  line-height: 1.45;
+  letter-spacing: -0.014em;
+  font-weight: 400;
+  &:lang(bn) {
+    letter-spacing: 0;
+    line-height: 1.62;
+  }
+}
+
+@utility text-eyebrow {
+  font-size: 0.9375rem;
+  line-height: 1.3;
+  letter-spacing: -0.006em;
+  font-weight: 500;
+  &:lang(bn) {
+    letter-spacing: 0;
+  }
+}
+
+@utility text-caption {
+  font-size: 0.8125rem;
+  line-height: 1.38;
+  letter-spacing: 0;
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   Materials
+   ========================================================================== */
+
+@utility glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+
+/* Frames for fine-line artwork: a hairline so pale art never melts into white. */
+@utility art-frame {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-subtle);
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px var(--line);
+    pointer-events: none;
+  }
+}
+
+@utility glass-strong {
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: saturate(180%) blur(28px);
+  backdrop-filter: saturate(180%) blur(28px);
+}
+
+@utility press {
+  transition: transform 160ms var(--ease-out-quint);
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+@utility hairline {
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+@utility skeleton {
+  background: linear-gradient(90deg, var(--bg-muted) 25%, var(--bg-subtle) 50%, var(--bg-muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility mask-fade-x {
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+}
+
+/* ==========================================================================
+   Long-form content rendered from the CMS (Markdown)
+   ========================================================================== */
+
+@layer components {
+  .prose-bsbra {
+    color: var(--fg-muted);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+  .prose-bsbra > * + * {
+    margin-top: 1.1em;
+  }
+  .prose-bsbra h2 {
+    color: var(--fg);
+    font-size: 1.75rem;
+    line-height: 1.15;
+    letter-spacing: -0.026em;
+    font-weight: 600;
+    margin-top: 2em;
+  }
+  .prose-bsbra h3 {
+    color: var(--fg);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 1.6em;
+  }
+  .prose-bsbra strong {
+    color: var(--fg);
+    font-weight: 600;
+  }
+  .prose-bsbra a {
+    color: var(--link);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+  .prose-bsbra ul,
+  .prose-bsbra ol {
+    padding-left: 1.25em;
+  }
+  .prose-bsbra ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  .prose-bsbra ul > li {
+    position: relative;
+    padding-left: 1.5em;
+  }
+  .prose-bsbra ul > li::before {
+    content: "";
+    position: absolute;
+    left: 0.25em;
+    top: 0.68em;
+    width: 0.4em;
+    height: 0.4em;
+    border-radius: 999px;
+    background: var(--fg-faint);
+  }
+  .prose-bsbra ol {
+    list-style: decimal;
+  }
+  .prose-bsbra li + li {
+    margin-top: 0.55em;
+  }
+  .prose-bsbra blockquote {
+    border-left: 2px solid var(--fg);
+    padding-left: 1em;
+    color: var(--fg);
+    font-size: 1.2em;
+  }
+  .prose-bsbra table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+  }
+  .prose-bsbra th,
+  .prose-bsbra td {
+    border-bottom: 1px solid var(--line);
+    padding: 0.6em 0.5em;
+    text-align: left;
+  }
+  .prose-bsbra code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--bg-muted);
+    padding: 0.1em 0.35em;
+    border-radius: 6px;
+  }
+  .prose-bsbra:lang(bn) {
+    line-height: 1.75;
+  }
+  .prose-bsbra:lang(bn) h2 {
+    letter-spacing: 0;
+    line-height: 1.3;
+  }
+
+  /* Compact prose for cards and summaries */
+  .prose-compact > * + * {
+    margin-top: 0.6em;
+  }
+  .prose-compact h2 {
+    font-size: 1.25rem;
+    margin-top: 1.2em;
+  }
+}
+
+/* ==========================================================================
+   Accessibility preferences
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-strong {
+    background: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root:not([data-theme="dark"]) {
+    --line: rgba(0, 0, 0, 0.32);
+    --fg-subtle: #3a3a3c;
+    --fg-faint: #48484a;
+  }
+  :root[data-theme="dark"] {
+    --line: rgba(255, 255, 255, 0.36);
+    --fg-subtle: #d2d2d7;
+    --fg-faint: #c7c7cc;
+  }
+}
+
+@media print {
+  header,
+  footer,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+}

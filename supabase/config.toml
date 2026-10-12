@@ -1,0 +1,45 @@
+# Supabase CLI configuration (optional — the SQL Editor route in README §2 needs no CLI).
+#   npx supabase link --project-ref jbondogatgxkwqgtzell
+#   npx supabase db push        # applies supabase/migrations
+#   npx supabase config push    # applies the auth settings and e-mail templates below
+project_id = "bsbra"
+
+[api]
+schemas = ["public", "graphql_public"]
+max_rows = 1000
+
+[auth]
+# Production URL — bsbra.org.bd is a placeholder: replace with the real domain.
+# Keep localhost in the redirect list for development.
+site_url = "https://www.bsbra.org.bd"
+additional_redirect_urls = [
+  "https://www.bsbra.org.bd/auth/callback",
+  "https://bsbra.org.bd/auth/callback",
+  "http://localhost:3000/auth/callback",
+]
+enable_signup = true
+jwt_expiry = 3600
+minimum_password_length = 8
+password_requirements = "letters_digits"
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+double_confirm_changes = true
+secure_password_change = true
+
+[auth.email.template.confirmation]
+subject = "Confirm your email · BSBRA"
+content_path = "./supabase/templates/confirm-signup.html"
+
+[auth.email.template.recovery]
+subject = "Reset your password · BSBRA"
+content_path = "./supabase/templates/reset-password.html"
+
+[auth.email.template.invite]
+subject = "You're invited to BSBRA"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.email_change]
+subject = "Confirm your new email · BSBRA"
+content_path = "./supabase/templates/email-change.html"

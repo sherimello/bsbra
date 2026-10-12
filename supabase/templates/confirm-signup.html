@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Confirm your email</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans Bengali',sans-serif;color:#1d1d1f;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f5f5f7;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background:#ffffff;border-radius:22px;overflow:hidden;">
+          <tr>
+            <td style="padding:36px 36px 8px;">
+              <table role="presentation" cellspacing="0" cellpadding="0"><tr>
+                <td style="width:36px;height:36px;border-radius:9px;background:#0a7f6f;color:#ffffff;font-weight:700;font-size:16px;text-align:center;line-height:36px;">B</td>
+                <td style="padding-left:10px;font-weight:700;font-size:17px;letter-spacing:-0.3px;">BSBRA</td>
+              </tr></table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 36px 0;">
+              <h1 style="margin:0;font-size:24px;line-height:1.2;letter-spacing:-0.4px;font-weight:700;">Confirm your email</h1>
+              <p style="margin:14px 0 0;font-size:15px;line-height:1.55;color:#515154;">Thanks for requesting access to the BSBRA portal. Confirm your email address — an administrator will then review your request and assign the right access.</p>
+              <p lang="bn" style="margin:12px 0 0;font-size:15px;line-height:1.7;color:#515154;">ইমেইল নিশ্চিত করুন — বিএসবিআরএ পোর্টালে অ্যাক্সেসের অনুরোধের জন্য ধন্যবাদ। ইমেইল নিশ্চিত করার পর একজন অ্যাডমিনিস্ট্রেটর আপনার অনুরোধ পর্যালোচনা করবেন।</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px 36px 8px;">
+              <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email&next=/en/portal" style="display:inline-block;background:#0a7f6f;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:13px 26px;border-radius:999px;">Confirm email · <span lang="bn">নিশ্চিত করুন</span></a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 36px 36px;font-size:12px;line-height:1.6;color:#86868b;">
+              If you didn't request this, you can safely ignore this email.<br><span lang="bn">আপনি এই অনুরোধ না করে থাকলে ইমেইলটি উপেক্ষা করুন।</span>
+            </td>
+          </tr>
+        </table>
+        <p style="margin:20px 0 0;font-size:11px;color:#86868b;">Bangladesh Ship Breakers &amp; Recyclers Association · Chattogram, Bangladesh</p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

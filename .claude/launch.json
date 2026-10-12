@@ -1,0 +1,20 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bsbra-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "bsbra-preview",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "-e",
+        "require('child_process').spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--port','3000'],{stdio:'inherit',env:{...process.env,NEXT_PUBLIC_SUPABASE_URL:'',NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:''}}).on('exit',c=>process.exit(c??0))"
+      ],
+      "port": 3000
+    }
+  ]
+}
