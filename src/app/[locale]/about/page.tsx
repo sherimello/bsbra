@@ -4,6 +4,8 @@ import { tr } from "@/lib/i18n/tr";
 import { localizeDigits } from "@/lib/i18n/format";
 import { pageMetadata } from "@/lib/seo";
 import { getPagesWithPrefix } from "@/lib/data/public";
+import { PHOTOS } from "@/lib/media/photos";
+import { PhotoFigure } from "@/components/ui/photo-figure";
 import { PageHero } from "@/components/site/page-hero";
 import { Container } from "@/components/ui/container";
 import { Markdown } from "@/components/ui/markdown";
@@ -26,7 +28,9 @@ export default async function AboutPage({ params }: PageProps<"/[locale]/about">
 
   return (
     <>
-      <PageHero eyebrow={t.about.eyebrow} title={t.about.title} lede={t.about.lede} />
+      <PageHero eyebrow={t.about.eyebrow} title={t.about.title} lede={t.about.lede}>
+        <PhotoFigure photo={PHOTOS.beachedBow} locale={locale} aspect="aspect-[4/3] sm:aspect-[21/9]" priority />
+      </PageHero>
 
       {(mission || vision) && (
         <section className="pb-8 sm:pb-12">

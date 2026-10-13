@@ -1,55 +1,43 @@
-"use client";
-
-import { m, type Variants } from "motion/react";
-import { spring } from "./springs";
-
-const VIEWPORT = { once: true, margin: "0px 0px -12% 0px" } as const;
+/**
+ * Reveal markers. Every outermost content block on the public site animates
+ * the same way — from blurred, slightly smaller and transparent to sharp, full
+ * size and opaque — via the site-wide CSS entrance and <RevealController />.
+ * These components only mark a block as one unit (so its children don't
+ * animate separately) and order staggered groups; they render plain elements.
+ */
 
 type Tag = "div" | "section" | "li" | "ul" | "article" | "header" | "p" | "span";
 
-/** Fades and lifts its content into place the first time it enters the viewport. */
 export function Reveal({
   children,
   className,
   delay = 0,
-  y = 28,
   as = "div",
   id,
 }: {
   children: React.ReactNode;
   className?: string;
+  /** Seconds to wait before the first entrance. */
   delay?: number;
+  /** Accepted for compatibility; reveals no longer travel vertically. */
   y?: number;
   as?: Tag;
   id?: string;
 }) {
-  const Component = m[as];
+  const Component = as;
   return (
     <Component
       id={id}
-      data-reveal
+      data-reveal=""
       className={className}
-      initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={VIEWPORT}
-      transition={{ ...spring.reveal, delay }}
+      style={delay ? ({ "--reveal-delay": `${delay}s` } as React.CSSProperties) : undefined}
     >
       {children}
     </Component>
   );
 }
 
-const groupVariants: Variants = {
-  hidden: {},
-  shown: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  shown: { opacity: 1, y: 0, transition: spring.reveal },
-};
-
-/** Staggers the entrance of its <RevealItem> children. */
+/** A container whose <RevealItem> children enter one after another. */
 export function RevealGroup({
   children,
   className,
@@ -59,9 +47,9 @@ export function RevealGroup({
   className?: string;
   as?: Tag;
 }) {
-  const Component = m[as];
+  const Component = as;
   return (
-    <Component className={className} variants={groupVariants} initial="hidden" whileInView="shown" viewport={VIEWPORT}>
+    <Component data-reveal-group="" className={className}>
       {children}
     </Component>
   );
@@ -76,9 +64,9 @@ export function RevealItem({
   className?: string;
   as?: Tag;
 }) {
-  const Component = m[as];
+  const Component = as;
   return (
-    <Component data-reveal className={className} variants={itemVariants}>
+    <Component data-reveal="" className={className}>
       {children}
     </Component>
   );

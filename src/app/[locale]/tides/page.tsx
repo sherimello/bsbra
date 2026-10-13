@@ -9,6 +9,10 @@ import { dhakaDateKey, formatDate, formatNumber, localizeDigits, monthName, week
 import { isPreviewMode } from "@/lib/env";
 import { pageMetadata } from "@/lib/seo";
 import { getPage, getTideBounds, getTideEntries } from "@/lib/data/public";
+import { getCoastConditions } from "@/lib/data/coast";
+import { PHOTOS } from "@/lib/media/photos";
+import { CoastNote, CoastStrip, TideCurve, TideWeek } from "@/components/coast/coast";
+import { PhotoFigure } from "@/components/ui/photo-figure";
 import type { TideEntry } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { PageHero } from "@/components/site/page-hero";
@@ -29,10 +33,36 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/tides">)
 export default async function TidesPage({ params, searchParams }: PageProps<"/[locale]/tides">) {
   const locale = await resolveLocale(params);
   const t = getDictionary(locale);
-  const guidance = await getPage("tides");
+  const [guidance, coast] = await Promise.all([getPage("tides"), getCoastConditions()]);
   return (
     <>
-      <PageHero eyebrow={t.tides.eyebrow} title={t.tides.title} lede={t.tides.lede} />
+      <PageHero eyebrow={t.tides.eyebrow} title={t.tides.title} lede={t.tides.lede}>
+        <PhotoFigure photo={PHOTOS.sunset} locale={locale} aspect="aspect-[4/3] sm:aspect-[21/9]" priority />
+      </PageHero>
+      {coast && (
+        <section id="forecast" className="scroll-mt-24 pb-20 sm:pb-28">
+          <Container>
+            <Reveal className="mb-10 max-w-2xl">
+              <h2 className="text-headline">{t.coast.forecastTitle}</h2>
+              <p className="text-lede mt-4 text-fg-subtle">{t.coast.forecastLede}</p>
+            </Reveal>
+            <CoastStrip data={coast} locale={locale} c={t.coast} href="#forecast-week" />
+            <div className="mt-6 rounded-[var(--radius-tile)] bg-bg-subtle px-4 pt-6 pb-4 sm:px-8 sm:pt-8">
+              <TideCurve data={coast} locale={locale} c={t.coast} />
+            </div>
+            <div id="forecast-week" className="mt-6 scroll-mt-24">
+              <TideWeek data={coast} locale={locale} c={t.coast} />
+            </div>
+            <CoastNote c={t.coast} className="mt-4" />
+          </Container>
+        </section>
+      )}
+      <Container className="pb-4">
+        <Reveal className="mb-8 max-w-2xl">
+          <h2 className="text-headline">{t.tides.officialTitle}</h2>
+          <p className="text-lede mt-4 text-fg-subtle">{t.tides.officialLede}</p>
+        </Reveal>
+      </Container>
       <Container className="pb-12">
         <Suspense fallback={<div className="skeleton h-[640px] rounded-[var(--radius-tile)]" />}>
           <TideMonth locale={locale} t={t} searchParams={searchParams} />

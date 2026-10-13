@@ -84,6 +84,9 @@ export function SiteFooter({
             <Link href={href(locale, "/terms")} className="hover:text-fg hover:underline">
               {t.footer.terms}
             </Link>
+            <Link href={href(locale, "/credits")} className="hover:text-fg hover:underline">
+              {t.footer.credits}
+            </Link>
             {socials.map((s) => (
               <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-fg hover:underline">
                 {s.label}

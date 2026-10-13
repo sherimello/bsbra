@@ -4,6 +4,8 @@ import { tr } from "@/lib/i18n/tr";
 import { pageMetadata } from "@/lib/seo";
 import { getComplianceItems, getPage } from "@/lib/data/public";
 import type { ComplianceCategory } from "@/lib/types";
+import { PHOTOS } from "@/lib/media/photos";
+import { PhotoFigure } from "@/components/ui/photo-figure";
 import { PageHero } from "@/components/site/page-hero";
 import { CmsSections } from "@/components/site/cms-sections";
 import { ComplianceCard } from "@/components/site/compliance-card";
@@ -37,6 +39,7 @@ export default async function CompliancePage({ params }: PageProps<"/[locale]/co
     <>
       <PageHero eyebrow={t.compliance.eyebrow} title={t.compliance.title} lede={t.compliance.lede}>
         <ButtonLink href={href(locale, "/compliance/our-compliances")}>{t.compliance.viewOurs}</ButtonLink>
+        <div className="mt-12"><PhotoFigure photo={PHOTOS.cranes} locale={locale} aspect="aspect-[4/3] sm:aspect-[21/9]" priority /></div>
       </PageHero>
 
       {overview && <CmsSections body={tr(overview, "body", locale)} locale={locale} className="pt-0 sm:pt-4" onThisPage={t.common.onThisPage} />}

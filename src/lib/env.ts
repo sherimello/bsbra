@@ -28,6 +28,7 @@ export const allowAccessRequests = process.env.NEXT_PUBLIC_ALLOW_ACCESS_REQUESTS
 /** Public URL for a file in the `media` storage bucket. */
 export function mediaUrl(path: string | null | undefined): string | null {
   if (!path) return null;
+  if (path.includes("/art/")) return null;
   if (/^https?:\/\//.test(path) || path.startsWith("/")) return path;
   if (!SUPABASE_URL) return null;
   return `${SUPABASE_URL}/storage/v1/object/public/media/${path.split("/").map(encodeURIComponent).join("/")}`;

@@ -6,14 +6,14 @@ import type { Transition } from "motion/react";
  * Motion's `bounce` ≈ 1 − damping ratio, `visualDuration` ≈ response.
  */
 export const spring = {
-  /** Default UI movement — settles without overshoot. */
-  ui: { type: "spring", bounce: 0, visualDuration: 0.4 } satisfies Transition,
-  /** Content entering the viewport — slower, calmer. */
-  reveal: { type: "spring", bounce: 0, visualDuration: 0.85 } satisfies Transition,
+  /** Default UI movement — settles with butter-smooth easing. */
+  ui: { type: "spring", bounce: 0.05, visualDuration: 0.45 } satisfies Transition,
+  /** Content entering the viewport — slower, calmer, pronounced ease. */
+  reveal: { type: "spring", bounce: 0, visualDuration: 1.05 } satisfies Transition,
   /** Sheets and drawers. */
-  sheet: { type: "spring", bounce: 0.12, visualDuration: 0.35 } satisfies Transition,
+  sheet: { type: "spring", bounce: 0.08, visualDuration: 0.4 } satisfies Transition,
   /** Small presses and toggles. */
   snappy: { type: "spring", bounce: 0, visualDuration: 0.22 } satisfies Transition,
 };
 
-export const easeOutQuint = [0.22, 1, 0.36, 1] as const;
+export const easeOutQuint = [0.16, 1, 0.3, 1] as const;

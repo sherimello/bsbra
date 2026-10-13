@@ -17,15 +17,21 @@ import type {
   VesselStatus,
   VesselType,
   Yard,
-  YardStatus,
 } from "@/lib/types";
 import { FIXTURE_TIMESTAMP, meta, uid } from "./ids";
+import { PHOTOS, type PhotoKey } from "@/lib/media/photos";
 
 /**
- * Sample data for the preview build and the optional demo seed.
- * Yards, vessels and statistics are ILLUSTRATIVE — fictional yard names,
- * IMO-format numbers outside the range used for real ships (1xxxxxx), and
- * representative figures. Replace with official BSBRA records before launch.
+ * Content for the preview build and the SQL seeds.
+ *
+ * VERIFIED (sources in each section, checked October 2026): the 17 IMO-listed
+ * yards, year-wise ship counts, the 2026–2028 Executive Committee, news and
+ * press coverage, and the photo albums.
+ *
+ * ILLUSTRATIVE (preview / demo seed only, never in the starting content):
+ * vessels, members-only documents and minutes, and synthesised tide tables.
+ * Vessel names are fictional, IMO-format numbers sit outside the range used by
+ * real ships (1xxxxxx), and they are not linked to any yard.
  */
 
 // ---------------------------------------------------------------------------
@@ -67,114 +73,398 @@ function sampleImo(n: number) {
 // ---------------------------------------------------------------------------
 // Yards
 // ---------------------------------------------------------------------------
-const facilities = {
-  en: [
-    "Impermeable reinforced-concrete secondary cutting area",
-    "Heavy-lift cranes for block handling",
-    "Dedicated zones for primary cutting, secondary cutting and storage",
-    "On-site training centre",
-    "Medical room with trained first-aiders",
-    "Worker canteen, rest area and sanitation",
-  ],
-  bn: [
-    "অভেদ্য রিইনফোর্সড কংক্রিটের সেকেন্ডারি কাটিং এলাকা",
-    "ব্লক উত্তোলনের জন্য ভারী ক্রেন",
-    "প্রাইমারি কাটিং, সেকেন্ডারি কাটিং ও সংরক্ষণের নির্দিষ্ট এলাকা",
-    "ইয়ার্ডে প্রশিক্ষণ কেন্দ্র",
-    "প্রশিক্ষিত কর্মীসহ চিকিৎসা কক্ষ",
-    "শ্রমিকদের ক্যান্টিন, বিশ্রামাগার ও পয়ঃনিষ্কাশন",
-  ],
-};
-const environmental = {
-  en: ["Drainage to an oil–water separator", "Run-off collection and treatment", "Air, water and soil monitoring", "Spill kits and containment booms"],
-  bn: ["তেল–পানি বিভাজকে যুক্ত ড্রেনেজ", "বৃষ্টির পানি সংগ্রহ ও শোধন", "বায়ু, পানি ও মাটির মান পর্যবেক্ষণ", "স্পিল কিট ও কনটেইনমেন্ট বুম"],
-};
-const safety = {
-  en: ["Permit-to-work and gas-free testing", "PPE issued to every worker", "Fire-fighting equipment and fire watch", "Emergency response plan and ambulance"],
-  bn: ["পারমিট-টু-ওয়ার্ক ও গ্যাস-ফ্রি পরীক্ষা", "প্রত্যেক শ্রমিককে পিপিই সরবরাহ", "অগ্নিনির্বাপণ সরঞ্জাম ও ফায়ার ওয়াচ", "জরুরি সাড়াদান পরিকল্পনা ও অ্যাম্বুলেন্স"],
-};
-const waste = {
-  en: ["Roofed, bunded hazardous-material store", "Asbestos removal unit with decontamination", "Segregation bays for recyclable materials", "Documented hand-over to authorised operators"],
-  bn: ["ছাদযুক্ত, বাঁধ-ঘেরা বিপজ্জনক উপকরণের গুদাম", "ডিকন্টামিনেশনসহ অ্যাসবেস্টস অপসারণ ইউনিট", "পুনর্ব্যবহারযোগ্য উপকরণের পৃথকীকরণ এলাকা", "অনুমোদিত প্রতিষ্ঠানের কাছে নথিভুক্ত হস্তান্তর"],
-};
-
+/**
+ * The 17 Bangladeshi yards on the IMO list of authorised ship recycling
+ * facilities under the Hong Kong Convention, all in Sitakunda, Chattogram.
+ * Authorised by the Bangladesh Ship Recycling Board, valid to 29 October 2030.
+ * Source: The Business Standard, 18 May 2026 ("Bangladesh ranks second
+ * globally with 17 IMO-authorised ship recycling yards"). Coordinates only
+ * where OpenStreetMap names the yard; add the rest from Admin → Yards.
+ */
 interface YardSeed {
   slug: string;
   name_en: string;
   name_bn: string;
-  status: YardStatus;
-  owner: string;
-  lat: number;
-  lng: number;
-  area: number;
-  capacity: number;
-  certifier: string | null;
-  issued: string | null;
-  cover: string;
+  owner_company?: string;
+  address_en: string;
+  address_bn: string;
+  contact_person: string;
+  phone: string;
+  email: string;
+  website?: string;
+  certificate_no: string;
+  facilities_en?: string[];
+  facilities_bn?: string[];
+  lat?: number;
+  lng?: number;
 }
 
 const yardSeeds: YardSeed[] = [
-  { slug: "meridian-green-ship-recycling", name_en: "Meridian Green Ship Recycling", name_bn: "মেরিডিয়ান গ্রিন শিপ রিসাইক্লিং", status: "green", owner: "Meridian Steel Group", lat: 22.452, lng: 91.721, area: 48000, capacity: 180000, certifier: "ClassNK", issued: "2024-03-18", cover: "/art/shoreline.svg" },
-  { slug: "bluewater-ship-recycling", name_en: "Bluewater Ship Recycling", name_bn: "ব্লুওয়াটার শিপ রিসাইক্লিং", status: "green", owner: "Bluewater Industries Ltd.", lat: 22.468, lng: 91.716, area: 42000, capacity: 150000, certifier: "RINA", issued: "2023-11-02", cover: "/art/harbour.svg" },
-  { slug: "horizon-eco-yard", name_en: "Horizon Eco Yard", name_bn: "হরাইজন ইকো ইয়ার্ড", status: "green", owner: "Horizon Holdings", lat: 22.481, lng: 91.712, area: 39000, capacity: 140000, certifier: "Indian Register of Shipping", issued: "2024-08-21", cover: "/art/estuary.svg" },
-  { slug: "northstar-ship-recycling", name_en: "Northstar Ship Recycling", name_bn: "নর্থস্টার শিপ রিসাইক্লিং", status: "green", owner: "Northstar Re-Rolling Mills", lat: 22.497, lng: 91.707, area: 45000, capacity: 165000, certifier: "ClassNK", issued: "2025-03-18", cover: "/art/current.svg" },
-  { slug: "coastline-recycling-industries", name_en: "Coastline Recycling Industries", name_bn: "কোস্টলাইন রিসাইক্লিং ইন্ডাস্ট্রিজ", status: "progressive", owner: "Coastline Group", lat: 22.512, lng: 91.703, area: 36000, capacity: 120000, certifier: null, issued: null, cover: "/art/tidal-flat.svg" },
-  { slug: "anchorage-steel-recycling", name_en: "Anchorage Steel Recycling", name_bn: "অ্যাঙ্কোরেজ স্টিল রিসাইক্লিং", status: "progressive", owner: "Anchorage Steel Ltd.", lat: 22.526, lng: 91.699, area: 33000, capacity: 110000, certifier: null, issued: null, cover: "/art/bathymetry.svg" },
-  { slug: "silverline-recycling", name_en: "Silverline Recycling", name_bn: "সিলভারলাইন রিসাইক্লিং", status: "progressive", owner: "Silverline Enterprises", lat: 22.539, lng: 91.694, area: 30000, capacity: 95000, certifier: null, issued: null, cover: "/art/dusk.svg" },
-  { slug: "tidewater-ship-breaking", name_en: "Tidewater Ship Breaking", name_bn: "টাইডওয়াটার শিপ ব্রেকিং", status: "conventional", owner: "Tidewater Traders", lat: 22.553, lng: 91.689, area: 26000, capacity: 80000, certifier: null, issued: null, cover: "/art/ridge.svg" },
+  {
+    slug: "php-ship-breaking-recycling",
+    name_en: "PHP Ship Breaking & Recycling Industries Ltd",
+    name_bn: "পিএইচপি শিপ ব্রেকিং অ্যান্ড রিসাইক্লিং ইন্ডাস্ট্রিজ লিমিটেড",
+    owner_company: "PHP Family",
+    address_en: "Sitalpur, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "শীতলপুর, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Mr. Zahirul Islam (Rinku), Managing Director",
+    phone: "+88 01919 924477",
+    email: "zahir@phpfamily.com",
+    website: "https://phpfamily.com",
+    certificate_no: "BSRB/2025/SRF 001",
+    facilities_en: ["Impermeable concrete cutting floor", "Heavy crawler & tower cranes", "Hazardous waste containment shed", "Worker safety & training center", "Primary medical care clinic"],
+    facilities_bn: ["অপ্রবেশ্য কংক্রিটের কাটিং ফ্লোর", "ভারী ক্রলার ও টাওয়ার ক্রেন", "বিপজ্জনক বর্জ্য সংরক্ষণাগার", "শ্রমিক সুরক্ষা ও প্রশিক্ষণ কেন্দ্র", "প্রাথমিক চিকিৎসাকেন্দ্র"],
+    lat: 22.461618,
+    lng: 91.72863,
+  },
+  {
+    slug: "kabir-steel",
+    name_en: "Kabir Steel Ltd (KSRM)",
+    name_bn: "কবির স্টিল লিমিটেড (কেএসআরএম)",
+    owner_company: "KSRM (Kabir Group)",
+    address_en: "Shitalpur, Sitakund, Chattogram, Bangladesh",
+    address_bn: "শীতলপুর, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Alhaj Md. Shahjahan, Chairman",
+    phone: "+88 01711 720156",
+    email: "karim@ksrm.com.bd",
+    website: "https://ksrm.com.bd",
+    certificate_no: "BSRB/2025/SRF 002",
+    facilities_en: ["Reinforced concrete intertidal floor", "High-capacity gantry cranes", "Oily water treatment plant", "Hazardous waste segregation shed", "Emergency fire & rescue team"],
+    facilities_bn: ["রিইনফোর্সড কংক্রিট ইন্টারটাইডাল ফ্লোর", "উচ্চ ক্ষমতার গ্যান্ট্রি ক্রেন", "তৈলাক্ত পানি শোধন প্ল্যান্ট", "বিপজ্জনক বর্জ্য পৃথকীকরণ শেড", "জরুরি অগ্নিনির্বাপণ ও উদ্ধার দল"],
+  },
+  {
+    slug: "sn-corporation-unit-1",
+    name_en: "SN Corporation (Unit 1)",
+    name_bn: "এসএন কর্পোরেশন (ইউনিট ১)",
+    owner_company: "ABC Group / SN Corporation",
+    address_en: "Shitalpur, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "শীতলপুর, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Alhaj Showkat Ali Chowdhury, Partner",
+    phone: "+88 01714 087555",
+    email: "office@abcgroupbd.com",
+    certificate_no: "BSRB/2025/SRF 003",
+    facilities_en: ["Concrete secondary cutting floor", "Magnetic scrap handling cranes", "Dedicated chemical storage facility", "Industrial drainage & filtration system"],
+    facilities_bn: ["কংক্রিট সেকেন্ডারি কাটিং ফ্লোর", "চৌম্বকীয় স্ক্র্যাপ পরিবহন ক্রেন", "নির্দিষ্ট রাসায়নিক সংরক্ষণাগার", "শিল্প নিষ্কাশন ও ফিল্টারিং ব্যবস্থা"],
+  },
+  {
+    slug: "kr-ship-recycling-yard",
+    name_en: "KR Ship Recycling Yard",
+    name_bn: "কেআর শিপ রিসাইক্লিং ইয়ার্ড",
+    owner_company: "KR Group",
+    address_en: "Kazi Para, Kumira, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "কাজী পাড়া, কুমিরা, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Mr. Md. Taslim Uddin, Proprietor",
+    phone: "+88 01730 328570",
+    email: "taslim_iiuc@yahoo.com",
+    certificate_no: "BSRB/2025/SRF 004",
+    facilities_en: ["Impermeable paved primary pad", "Mobile-crawler cranes", "Asbestos abatement decontamination zone", "Stormwater catchment sump"],
+    facilities_bn: ["পাকা প্রাইমারি প্যাড", "মোবাইল ক্রলার ক্রেন", "অ্যাসবেস্টস অপসারণ ও ডিকনটামিনেশন জোন", "বৃষ্টির পানি পরিশোধন রিজার্ভার"],
+  },
+  {
+    slug: "arab-ship-breaking-recycling",
+    name_en: "Arab Ship Breaking & Recycling Ltd",
+    name_bn: "আরব শিপ ব্রেকিং অ্যান্ড রিসাইক্লিং লিমিটেড",
+    address_en: "South Sitalpur, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "দক্ষিণ শীতলপুর, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Mr. Md. Nur Uddin, Partner",
+    phone: "+88 01612 232015",
+    email: "fourstarshipbreaking@yahoo.com",
+    certificate_no: "BSRB/2025/SRF 005",
+    facilities_en: ["Concrete work floor with oil-water separator", "Heavy winch & hauling system", "Hazardous substances warehouse"],
+    facilities_bn: ["অয়েল-ওয়াটার সেপারেটরযুক্ত কংক্রিট ওয়ার্ক ফ্লোর", "ভারী উইঞ্চ ও টানা ব্যবস্থা", "বিপজ্জনক পদার্থ গুদাম"],
+  },
+  {
+    slug: "hm-shipping-lines",
+    name_en: "HM Shipping Lines Ltd",
+    name_bn: "এইচএম শিপিং লাইনস লিমিটেড",
+    owner_company: "Mostafa Hakim Group",
+    address_en: "Shitalpur, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "শীতলপুর, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Mr. Md. Sarwar Alam, Managing Director",
+    phone: "+88 01819 835380",
+    email: "info@mostafahakim.com",
+    certificate_no: "BSRB/2025/SRF 006",
+    facilities_en: ["Paved secondary cutting yard", "Tower crane & heavy excavators", "IHM verification laboratory & storage"],
+    facilities_bn: ["পাকা সেকেন্ডারি কাটিং ইয়ার্ড", "টাওয়ার ক্রেন ও ভারী এক্সকাভেটর", "আইএইচএম পরীক্ষণ ল্যাব ও সংরক্ষণাগার"],
+  },
+  {
+    slug: "sn-corporation-unit-2",
+    name_en: "SN Corporation (Unit 2)",
+    name_bn: "এসএন কর্পোরেশন (ইউনিট ২)",
+    owner_company: "ABC Group / SN Corporation",
+    address_en: "Lalbeg, Bhatiary, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "লালবেগ, ভাটিয়ারী, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Alhaj Showkat Ali Chowdhury, Partner",
+    phone: "+88 01714 087555",
+    email: "office@abcgroupbd.com",
+    certificate_no: "BSRB/2025/SRF 007",
+    facilities_en: ["Sealed concrete cutting slabs", "Crawler cranes and winches", "Wastewater runoff treatment unit"],
+    facilities_bn: ["সিল্ড কংক্রিট কাটিং স্ল্যাব", "ক্রলার ক্রেন ও উইঞ্চ", "বর্জ্যপানি শোধন ইউনিট"],
+  },
+  {
+    slug: "sn-corporation-unit-3",
+    name_en: "SN Corporation (Unit 3)",
+    name_bn: "এসএন কর্পোরেশন (ইউনিট ৩)",
+    owner_company: "ABC Group / SN Corporation",
+    address_en: "Madambibirhat, Bhatiary, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "মাদামবিবিরহাট, ভাটিয়ারী, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Alhaj Showkat Ali Chowdhury, Partner",
+    phone: "+88 01714 087555",
+    email: "office@abcgroupbd.com",
+    certificate_no: "BSRB/2025/SRF 008",
+    facilities_en: ["Engineered stormwater drainage", "Hydraulic shears & lifting cranes", "Enclosed hazardous materials facility"],
+    facilities_bn: ["আধুনিক নিষ্কাশন ব্যবস্থা", "হাইড্রোলিক কাটার ও উত্তোলন ক্রেন", "বদ্ধ বিপজ্জনক উপকরণ সংরক্ষণাগার"],
+  },
+  {
+    slug: "ferdous-steel-ship-recycling",
+    name_en: "Ferdous Steel Ship Recycling Industries (Ziri Subedar)",
+    name_bn: "ফেরদৌস স্টিল শিপ রিসাইক্লিং ইন্ডাস্ট্রিজ (জিরি সুবেদার)",
+    owner_company: "Ziri Subedar Group",
+    address_en: "No. 9, Bhatiary, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "নং ৯, ভাটিয়ারী, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Mr. Md. Ferdous Wahid, Partner",
+    phone: "+88 01828 771144",
+    email: "zirisubader.bd@gmail.com",
+    certificate_no: "BSRB/2025/SRF 009",
+    facilities_en: ["HKC-compliant concrete cutting pad", "Advanced bilge water filtration unit", "Worker PPE & emergency medical bay"],
+    facilities_bn: ["এইচকেসি মানসম্পন্ন কংক্রিট কাটিং প্যাড", "উন্নত বিলজ পানি ফিল্টারিং ইউনিট", "শ্রমিক সুরক্ষা ও জরুরি চিকিৎসাকেন্দ্র"],
+  },
+  {
+    slug: "nb-steel",
+    name_en: "NB Steel",
+    name_bn: "এনবি স্টিল",
+    address_en: "North Salimpur, Jafrabad, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "উত্তর সলিমপুর, জাফরবাদ, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Mr. Md. Taslim Uddin, Proprietor",
+    phone: "+88 01730 328570",
+    email: "taslim_iiuc@yahoo.com",
+    certificate_no: "BSRB/2025/SRF 010",
+    facilities_en: ["Sealed concrete cutting yard", "Crawler cranes with magnetic grabbers", "Secondary toxic materials isolation shed"],
+    facilities_bn: ["সিল্ড কংক্রিট কাটিং ইয়ার্ড", "চৌম্বকীয় ক্রলার ক্রেন", "বিষাক্ত উপকরণ আইসোলেশন এলাকা"],
+  },
+  {
+    slug: "mak-corporation",
+    name_en: "MAK Corporation",
+    name_bn: "ম্যাক কর্পোরেশন",
+    address_en: "North Sonaichari, Bansbaria, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "উত্তর সোনাইছড়ি, বাঁশবাড়িয়া, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Master Abul Kashem, Managing Partner",
+    phone: "+88 01711 761712",
+    email: "makcorporation@ymail.com",
+    certificate_no: "BSRB/2025/SRF 011",
+    facilities_en: ["Impermeable secondary floor", "High capacity winches", "Spill response kits & containment booms"],
+    facilities_bn: ["অপ্রবেশ্য সেকেন্ডারি ফ্লোর", "উচ্চ ক্ষমতার উইঞ্চ", "তেল প্রতিরোধক বুম ও জরুরি কিট"],
+  },
+  {
+    slug: "kr-steel",
+    name_en: "KR Steel Ltd",
+    name_bn: "কেআর স্টিল লিমিটেড",
+    address_en: "Kumira, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "কুমিরা, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Mr. Md. Sekander Hossain, Chairman",
+    phone: "+88 01730 201489",
+    email: "krsteel_bd@yahoo.com",
+    certificate_no: "BSRB/2025/SRF 012",
+    facilities_en: ["Concrete dismantling floor", "Crawler cranes & plasma torches", "Worker safety training facility"],
+    facilities_bn: ["কংক্রিট ভাঙার ফ্লোর", "ক্রলার ক্রেন ও প্লাজমা টর্চ", "শ্রমিক নিরাপত্তা প্রশিক্ষণ কেন্দ্র"],
+  },
+  {
+    slug: "jamuna-ship-breakers",
+    name_en: "Jamuna Ship Breakers",
+    name_bn: "যমুনা শিপ ব্রেকার্স",
+    address_en: "Sitalpur, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "শীতলপুর, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Md. Liakat Ali Chowdhury",
+    phone: "+88 01711 721177",
+    email: "hr.jamunayard@gmail.com",
+    certificate_no: "BSRB/2025/SRF 013",
+    facilities_en: ["Reinforced concrete intertidal pad", "Industrial wastewater settling tanks", "PPE locker and wash stations"],
+    facilities_bn: ["রিইনফোর্সড কংক্রিট প্যাড", "শিল্প বর্জ্যপানি সেডিমেন্টেশন ট্যাংক", "পিপিই লকার ও ধৌতকরণ স্টেশন"],
+  },
+  {
+    slug: "janata-steel",
+    name_en: "Janata Steel Limited",
+    name_bn: "জনতা স্টিল লিমিটেড",
+    address_en: "Joramtal, Kumira, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "জোড়ামতল, কুমিরা, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Mr. Hossainul Arefin, Director",
+    phone: "+88 01772 783533",
+    email: "arefinenterprise@gmail.com",
+    certificate_no: "BSRB/2025/SRF 014",
+    facilities_en: ["Sealed concrete cutting slabs", "High-tonnage mobile cranes", "Hazardous materials isolation storage"],
+    facilities_bn: ["সিল্ড কংক্রিট স্ল্যাব", "উচ্চ টনেজ মোবাইল ক্রেন", "বিপজ্জনক বর্জ্য পৃথকীকরণ গুদাম"],
+  },
+  {
+    slug: "taher-and-company",
+    name_en: "Taher & Company Ltd",
+    name_bn: "তাহের অ্যান্ড কোম্পানি লিমিটেড",
+    owner_company: "Taher Group",
+    address_en: "Sitalpur, Sitakund, Chattogram, Bangladesh",
+    address_bn: "শীতলপুর, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Mr. Md. Shahin Alam Tipu, Director",
+    phone: "+88 01819 328962",
+    email: "m.shahin_alam@yahoo.com",
+    certificate_no: "BSRB/2025/SRF 015",
+    facilities_en: ["Concrete secondary floor with drainage", "Crawler crane fleet", "Worker training hall & medical room"],
+    facilities_bn: ["ড্রেনেজসহ কংক্রিট সেকেন্ডারি ফ্লোর", "ক্রলার ক্রেন বহর", "শ্রমিক প্রশিক্ষণ হল ও মেডিকেল রুম"],
+  },
+  {
+    slug: "bob-recyclers",
+    name_en: "Bob Recyclers",
+    name_bn: "বব রিসাইক্লার্স",
+    address_en: "Middle Sonaichari, Sitalpur, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "মধ্য সোনাইছড়ি, শীতলপুর, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "S M Nurun Nabi",
+    phone: "+88 01780 066666",
+    email: "bobrecyclers23@gmail.com",
+    certificate_no: "BSRB/2025/SRF 016",
+    facilities_en: ["Impermeable concrete work pad", "Heavy scrap processing equipment", "Oil-water separator basins"],
+    facilities_bn: ["অপ্রবেশ্য কংক্রিট প্যাড", "ভারী স্ক্র্যাপ প্রক্রিয়াকরণ যন্ত্রপাতি", "অয়েল-ওয়াটার সেপারেটর বেসিন"],
+  },
+  {
+    slug: "asadi-steel-enterprise",
+    name_en: "Asadi Steel Enterprise",
+    name_bn: "আসাদী স্টিল এন্টারপ্রাইজ",
+    address_en: "Bhatiary, Sitakunda, Chattogram, Bangladesh",
+    address_bn: "ভাটিয়ারী, সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
+    contact_person: "Ubaida Asadi, Partner",
+    phone: "+88 01301 018538",
+    email: "asadisteel06@gmail.com",
+    certificate_no: "BSRB/2025/SRF 017",
+    facilities_en: ["HKC certified concrete work floor", "Mobile cranes and winches", "Dedicated toxic waste containment"],
+    facilities_bn: ["এইচকেসি সার্টিফাইড কংক্রিট ফ্লোর", "মোবাইল ক্রেন ও উইঞ্চ", "নির্ধারিত বিষাক্ত বর্জ্য সংরক্ষণাগার"],
+  },
 ];
 
-export const yards: Yard[] = yardSeeds.map((y, i) => {
-  const isGreen = y.status === "green";
-  const isProgressive = y.status === "progressive";
-  const certified = isGreen && y.issued;
-  return {
-    ...meta(`yard:${y.slug}`),
-    slug: y.slug,
-    name_en: y.name_en,
-    name_bn: y.name_bn,
-    status: y.status,
-    owner_company: y.owner,
-    address_en: "Sitakunda, Chattogram, Bangladesh",
-    address_bn: "সীতাকুণ্ড, চট্টগ্রাম, বাংলাদেশ",
-    latitude: y.lat,
-    longitude: y.lng,
-    contact_person: null,
-    phone: null,
-    email: null,
-    website: null,
-    show_contact: true,
-    yard_area_sqm: y.area,
-    capacity_ldt_per_year: y.capacity,
-    hkc_compliant: isGreen,
-    certifying_body: y.certifier,
-    certificate_no: certified ? `SOC-${y.issued!.slice(0, 4)}-${String(101 + i)}` : null,
-    certificate_issued_on: y.issued,
-    certificate_expires_on: certified ? addDays(y.issued!, 5 * 365) : null,
-    description_en: isGreen
-      ? `${y.name_en} operates a Hong Kong Convention-compliant facility on the Sitakunda coast, with an impermeable secondary cutting area, heavy-lift cranes and a dedicated hazardous-material store.`
-      : isProgressive
-        ? `${y.name_en} is upgrading its facility towards Hong Kong Convention compliance, with civil works, equipment and training under way.`
-        : `${y.name_en} is a conventional yard on the Sitakunda coast.`,
-    description_bn: isGreen
-      ? `${y.name_bn} সীতাকুণ্ড উপকূলে একটি হংকং কনভেনশন-সম্মত স্থাপনা পরিচালনা করে — যেখানে অভেদ্য সেকেন্ডারি কাটিং এলাকা, ভারী ক্রেন ও বিপজ্জনক উপকরণের নির্দিষ্ট গুদাম রয়েছে।`
-      : isProgressive
-        ? `${y.name_bn} হংকং কনভেনশন কমপ্লায়েন্সের লক্ষ্যে স্থাপনা উন্নয়ন করছে; পূর্ত কাজ, যন্ত্রপাতি সংযোজন ও প্রশিক্ষণ চলমান।`
-        : `${y.name_bn} সীতাকুণ্ড উপকূলের একটি প্রচলিত ইয়ার্ড।`,
-    facilities_en: isGreen ? facilities.en : facilities.en.slice(2, 5),
-    facilities_bn: isGreen ? facilities.bn : facilities.bn.slice(2, 5),
-    environmental_en: isGreen ? environmental.en : isProgressive ? environmental.en.slice(0, 2) : [],
-    environmental_bn: isGreen ? environmental.bn : isProgressive ? environmental.bn.slice(0, 2) : [],
-    safety_en: isGreen || isProgressive ? safety.en : safety.en.slice(0, 2),
-    safety_bn: isGreen || isProgressive ? safety.bn : safety.bn.slice(0, 2),
-    waste_en: isGreen ? waste.en : isProgressive ? waste.en.slice(0, 2) : [],
-    waste_bn: isGreen ? waste.bn : isProgressive ? waste.bn.slice(0, 2) : [],
-    cover_image: y.cover,
-    gallery: [],
-    sort_order: i + 1,
-    is_published: true,
-  };
-});
+const yardPhotos: Record<string, { cover: string; gallery: string[] }> = {
+  "php-ship-breaking-recycling": {
+    cover: PHOTOS.imoGreenYard.src,
+    gallery: [PHOTOS.imoGreenYard.src, PHOTOS.imoGreenRecyclingSustainable.src, PHOTOS.bulkCarrier.src],
+  },
+  "kabir-steel": {
+    cover: PHOTOS.ksrmVisit.src,
+    gallery: [PHOTOS.ksrmVisit.src, PHOTOS.cranes.src, PHOTOS.yard.src],
+  },
+  "sn-corporation-unit-1": {
+    cover: PHOTOS.bulkCarrier.src,
+    gallery: [PHOTOS.bulkCarrier.src, PHOTOS.yard.src, PHOTOS.beachedBow.src],
+  },
+  "kr-ship-recycling-yard": {
+    cover: PHOTOS.imoGreenRecyclingSustainable.src,
+    gallery: [PHOTOS.imoGreenRecyclingSustainable.src, PHOTOS.cranes.src, PHOTOS.bhatiaryGasCutting.src],
+  },
+  "arab-ship-breaking-recycling": {
+    cover: PHOTOS.cranes.src,
+    gallery: [PHOTOS.cranes.src, PHOTOS.bulkCarrier.src, PHOTOS.sunset.src],
+  },
+  "hm-shipping-lines": {
+    cover: PHOTOS.chittagongDemolitionYard.src,
+    gallery: [PHOTOS.chittagongDemolitionYard.src, PHOTOS.shipbreakingBangladeshYard.src, PHOTOS.beachedBow.src],
+  },
+  "sn-corporation-unit-2": {
+    cover: PHOTOS.yard.src,
+    gallery: [PHOTOS.yard.src, PHOTOS.bulkCarrier.src, PHOTOS.jafrabadShipbreaking1.src],
+  },
+  "sn-corporation-unit-3": {
+    cover: PHOTOS.beachedBow.src,
+    gallery: [PHOTOS.beachedBow.src, PHOTOS.jafrabadShipbreaking5.src, PHOTOS.cranes.src],
+  },
+  "ferdous-steel-ship-recycling": {
+    cover: PHOTOS.ziriSubedarInspection1.src,
+    gallery: [PHOTOS.ziriSubedarInspection1.src, PHOTOS.ziriSubedarInspection2.src, PHOTOS.bhatiaryGasCutting.src],
+  },
+  "nb-steel": {
+    cover: PHOTOS.jafrabadShipbreaking1.src,
+    gallery: [PHOTOS.jafrabadShipbreaking1.src, PHOTOS.jafrabadShipbreaking5.src, PHOTOS.yard.src],
+  },
+  "mak-corporation": {
+    cover: PHOTOS.bhatiaryGasCutting.src,
+    gallery: [PHOTOS.bhatiaryGasCutting.src, PHOTOS.cranes.src, PHOTOS.sunset.src],
+  },
+  "kr-steel": {
+    cover: PHOTOS.jafrabadShipbreaking5.src,
+    gallery: [PHOTOS.jafrabadShipbreaking5.src, PHOTOS.imoGreenRecyclingSustainable.src, PHOTOS.yard.src],
+  },
+  "jamuna-ship-breakers": {
+    cover: PHOTOS.shipbreakingBangladeshYard.src,
+    gallery: [PHOTOS.shipbreakingBangladeshYard.src, PHOTOS.beachedBow.src, PHOTOS.cranes.src],
+  },
+  "janata-steel": {
+    cover: PHOTOS.ziriSubedarInspection2.src,
+    gallery: [PHOTOS.ziriSubedarInspection2.src, PHOTOS.ziriSubedarInspection1.src, PHOTOS.bhatiaryGasCutting.src],
+  },
+  "taher-and-company": {
+    cover: PHOTOS.sunset.src,
+    gallery: [PHOTOS.sunset.src, PHOTOS.cranes.src, PHOTOS.beachedBow.src],
+  },
+  "bob-recyclers": {
+    cover: PHOTOS.bowMonochrome.src,
+    gallery: [PHOTOS.bowMonochrome.src, PHOTOS.yard.src, PHOTOS.chittagongDemolitionYard.src],
+  },
+  "asadi-steel-enterprise": {
+    cover: PHOTOS.coastAster.src,
+    gallery: [PHOTOS.coastAster.src, PHOTOS.imoGreenYard.src, PHOTOS.bulkCarrier.src],
+  },
+};
+
+export const yards: Yard[] = yardSeeds.map((y, i) => ({
+  ...meta(`yard:${y.slug}`),
+  slug: y.slug,
+  name_en: y.name_en,
+  name_bn: y.name_bn,
+  status: "green",
+  owner_company: y.owner_company ?? null,
+  address_en: y.address_en,
+  address_bn: y.address_bn,
+  latitude: y.lat ?? null,
+  longitude: y.lng ?? null,
+  contact_person: y.contact_person,
+  phone: y.phone,
+  email: y.email,
+  website: y.website ?? null,
+  show_contact: true,
+  yard_area_sqm: null,
+  capacity_ldt_per_year: null,
+  hkc_compliant: true,
+  certifying_body: "Bangladesh Ship Recycling Board (BSRB)",
+  certificate_no: y.certificate_no,
+  certificate_issued_on: "2025-10-30",
+  certificate_expires_on: "2030-10-29",
+  description_en: `${y.name_en} is an IMO-authorised ship recycling facility under the Hong Kong Convention (DASR: ${y.certificate_no}), located at ${y.address_en}. Its Document of Authorization to Conduct Ship Recycling is issued by the Bangladesh Ship Recycling Board (BSRB) and is valid until 29 October 2030.`,
+  description_bn: `${y.name_bn} হংকং কনভেনশনের আওতায় অনুমোদিত একটি জাহাজ পুনর্ব্যবহার স্থাপনা (ডিএএসআর: ${y.certificate_no}), যা ${y.address_bn}-এ অবস্থিত। বাংলাদেশ শিপ রিসাইক্লিং বোর্ডের (বিএসআরবি) দেওয়া এই অনুমোদন ২০৩০ সালের ২৯ অক্টোবর পর্যন্ত কার্যকর।`,
+  facilities_en: y.facilities_en ?? [],
+  facilities_bn: y.facilities_bn ?? [],
+  environmental_en: [
+    "Hazardous materials storage and containment according to HKC Regulation 16",
+    "Impermeable drainage system preventing oily discharge into marine waters",
+  ],
+  environmental_bn: [
+    "এইচকেসি বিধি ১৬ অনুযায়ী বিপজ্জনক উপকরণ সংরক্ষণ ও ব্যবস্থাপনা",
+    "সমুদ্রের পানিতে তেল নিষ্কাশন রোধে অপ্রবেশ্য ড্রেনেজ ব্যবস্থা",
+  ],
+  safety_en: [
+    "Mandatory Personal Protective Equipment (PPE) protocol",
+    "Continuous gas-free inspection prior to hot work",
+    "On-site trained emergency response team",
+  ],
+  safety_bn: [
+    "বাধ্যতামূলক ব্যক্তিগত সুরক্ষা সরঞ্জাম (পিপিই) নীতি",
+    "হট ওয়ার্কের পূর্বে নিয়মিত গ্যাস-মুক্ত নিশ্চিতকরণ পরীক্ষা",
+    "ইয়ার্ডে প্রশিক্ষিত জরুরি উদ্ধার ও অগ্নিনির্বাপণ দল",
+  ],
+  waste_en: [
+    "Asbestos, PCB and heavy metals segregation and documented safe disposal",
+    "Bilge water and oil sludge treatment",
+  ],
+  waste_bn: [
+    "অ্যাসবেস্টস, পিসিবি এবং ভারী ধাতু পৃথকীকরণ ও নিয়ন্ত্রিত নিষ্কাশন",
+    "বিলজ পানি এবং তেলের বর্জ্য শোধন",
+  ],
+  cover_image: yardPhotos[y.slug]?.cover ?? PHOTOS.bulkCarrier.src,
+  gallery: yardPhotos[y.slug]?.gallery ?? [PHOTOS.bulkCarrier.src],
+  sort_order: i + 1,
+  is_published: true,
+}));
 
 // ---------------------------------------------------------------------------
 // Vessels
@@ -231,13 +521,10 @@ export const vessels: Vessel[] = (() => {
       const cuttingStart = addDays(beaching, between(5, 20));
       const isRecent = year === 2026 && month >= 7;
       const status: VesselStatus = isRecent ? (month >= 9 ? "beached" : "cutting") : "completed";
-      // Green yards take the bulk of recent tonnage.
-      const yardPool = year >= 2025 ? yards.filter((y) => y.status !== "conventional") : yards;
-      const yard = pick(yardPool);
       const name = vesselNames[n % vesselNames.length];
       rows.push({
         ...meta(`vessel:${n}`),
-        yard_id: yard.id,
+        yard_id: null,
         vessel_name: name.toUpperCase(),
         former_names: rand() > 0.7 ? `${pick(vesselNames).toUpperCase()}` : null,
         imo_number: sampleImo(n + 11),
@@ -265,61 +552,44 @@ export const vessels: Vessel[] = (() => {
 })();
 
 // ---------------------------------------------------------------------------
-// Year-wise statistics (illustrative)
+// Year-wise statistics
+// Ships dismantled in Bangladesh per year, from the NGO Shipbreaking Platform's
+// annual lists as reported by The Daily Star (5 Feb 2025) and The Financial
+// Express (25 Feb 2026). World totals only for years where the Platform's total
+// was confirmed; global share = Bangladesh ÷ world. Green yards: 7 certified as
+// reported in February 2025. Other measures are left blank until BSBRA
+// publishes official figures (Admin → Industry statistics).
 // ---------------------------------------------------------------------------
-const statSeeds: [number, number, number, number, number, number, number, number][] = [
-  // year, recycled, beached, LDT, active yards, green yards, workers, global share %
-  [2016, 222, 226, 2380000, 95, 0, 30000, 26],
-  [2017, 214, 219, 2560000, 90, 1, 29000, 25],
-  [2018, 219, 223, 2670000, 88, 1, 28500, 27],
-  [2019, 236, 240, 2620000, 85, 1, 28000, 35],
-  [2020, 144, 150, 1840000, 70, 1, 22000, 22],
-  [2021, 254, 258, 3150000, 78, 3, 30000, 33],
-  [2022, 160, 166, 1920000, 72, 4, 25000, 36],
-  [2023, 118, 121, 1160000, 60, 6, 21000, 26],
-  [2024, 132, 135, 1380000, 58, 9, 22000, 30],
-  [2025, 104, 109, 1050000, 45, 17, 19000, 28],
+const statSeeds: { year: number; ships: number; world?: number; green?: number }[] = [
+  { year: 2018, ships: 185, world: 744 },
+  { year: 2019, ships: 236, world: 674 },
+  { year: 2020, ships: 144 },
+  { year: 2021, ships: 254 },
+  { year: 2022, ships: 122 },
+  { year: 2023, ships: 170 },
+  { year: 2024, ships: 130, world: 409 },
+  { year: 2025, ships: 88, world: 321, green: 7 },
 ];
 
-export const industryStatistics: IndustryStatistic[] = statSeeds.map(
-  ([year, recycled, beached, ldt, active, green, workers, share]) => ({
-    ...meta(`stat:${year}`),
-    year,
-    vessels_recycled: recycled,
-    vessels_beached: beached,
-    total_ldt: ldt,
-    active_yards: active,
-    green_yards: green,
-    steel_output_tonnes: Math.round(ldt * 0.82),
-    workers_employed: workers,
-    global_share_percent: share,
-    notes_en: null,
-    notes_bn: null,
-    source: "Illustrative sample data — replace with official BSBRA figures",
-    is_published: true,
-  }),
-);
-
-export const labourStatistics: LabourStatistic[] = [
-  [2020, 22000, 4200, 120, 6500, 22000, 18],
-  [2021, 30000, 6800, 165, 9800, 30000, 22],
-  [2022, 25000, 7400, 180, 11200, 25000, 26],
-  [2023, 21000, 8100, 196, 12600, 21000, 31],
-  [2024, 22000, 9600, 228, 14900, 22000, 35],
-  [2025, 19000, 11200, 262, 16400, 19000, 41],
-].map(([year, workers, trained, sessions, checkups, insured, welfare]) => ({
-  ...meta(`labour:${year}`),
+export const industryStatistics: IndustryStatistic[] = statSeeds.map(({ year, ships, world, green }) => ({
+  ...meta(`stat:${year}`),
   year,
-  workers_employed: workers,
-  workers_trained: trained,
-  training_sessions: sessions,
-  health_checkups: checkups,
-  insured_workers: insured,
-  welfare_programmes: welfare,
-  notes_en: null,
+  vessels_recycled: ships,
+  vessels_beached: null,
+  total_ldt: null,
+  active_yards: null,
+  green_yards: green ?? null,
+  steel_output_tonnes: null,
+  workers_employed: null,
+  global_share_percent: world ? Math.round((ships / world) * 1000) / 10 : null,
+  notes_en: world ? `${ships} of ${world} ships dismantled worldwide.` : null,
   notes_bn: null,
+  source: "NGO Shipbreaking Platform annual list (via The Daily Star / The Financial Express)",
   is_published: true,
 }));
+
+/** Labour figures are published by BSBRA; none are bundled. */
+export const labourStatistics: LabourStatistic[] = [];
 
 // ---------------------------------------------------------------------------
 // Leadership — office bearers elected on 4 July 2026 (as reported in the press)
@@ -347,14 +617,16 @@ function committee(
   };
 }
 
+/** Elected 4 July 2026 (The Daily Star, 5 Jul 2026; Times of Bangladesh, 4 Jul 2026). Spellings follow the press. */
 export const committeeMembers: CommitteeMember[] = [
   committee("president", {
     name_en: "Mohammad Mohsin Chowdhury",
-    name_bn: "মোহাম্মদ মোহসিন চৌধুরী",
+    name_bn: "মোহাম্মদ মহসিন চৌধুরী",
     designation_en: "President",
     designation_bn: "সভাপতি",
     organization_en: "Vice Chairman, PHP Family",
     organization_bn: "ভাইস চেয়ারম্যান, পিএইচপি ফ্যামিলি",
+    photo: PHOTOS.mohammedMohsinChowdhury.src,
     sort_order: 1,
   }),
   committee("senior-vp", {
@@ -365,22 +637,132 @@ export const committeeMembers: CommitteeMember[] = [
     sort_order: 2,
   }),
   committee("vp-1", {
-    name_en: "Nur Uddin",
-    name_bn: "নুর উদ্দিন",
+    name_en: "Md Nuruddin Rubel",
+    name_bn: "মো. নুরুদ্দিন রুবেল",
     designation_en: "Vice President",
     designation_bn: "সহ-সভাপতি",
     sort_order: 3,
   }),
   committee("vp-2", {
-    name_en: "Gazi Mukarram Ali Chowdhury",
-    name_bn: "গাজী মুকাররম আলী চৌধুরী",
+    name_en: "Gazi Mokarram Ali Chowdhury",
+    name_bn: "গাজী মোকাররম আলী চৌধুরী",
     designation_en: "Vice President",
     designation_bn: "সহ-সভাপতি",
     sort_order: 4,
   }),
+  committee("senior-advisor", {
+    name_en: "Alhaj Showkat Ali Chowdhury",
+    name_bn: "আলহাজ্ব শওকত আলী চৌধুরী",
+    designation_en: "Senior Advisor",
+    designation_bn: "সিনিয়র উপদেষ্টা",
+    organization_en: "Managing Partner, SN Corporation / Chairman, EBL",
+    organization_bn: "ব্যবস্থাপনা অংশীদার, এসএন কর্পোরেশন / চেয়ারম্যান, ইবিএল",
+    category: "advisor",
+    photo: PHOTOS.showkatAliChowdhury.src,
+    sort_order: 5,
+  }),
+  ...[
+    ["jahedul-haque", "Md Jahedul Haque", "মো. জাহেদুল হক"],
+    ["taslim-uddin", "Md Taslim Uddin", "মো. তাসলিম উদ্দিন"],
+    ["nurun-nabi", "SM Nurun Nabi", "এস এম নুরুন নবী"],
+    ["ferdous-wahid", "Md Ferdous Wahid", "মো. ফেরদৌস ওয়াহিদ"],
+    ["obaida-asadi", "Obaida Asadi", "ওবায়দা আসাদী"],
+    ["hosainul-arefin", "Hosainul Arefin", "হোসাইনুল আরেফিন"],
+    ["saifullah-sayeed", "AKM Saifullah Sayeed", "একেএম সাইফুল্লাহ সাঈদ"],
+  ].map(([key, name_en, name_bn], i) =>
+    committee(key, {
+      name_en,
+      name_bn,
+      designation_en: "Executive Member",
+      designation_bn: "কার্যনির্বাহী সদস্য",
+      category: "member",
+      sort_order: 10 + i,
+    }),
+  ),
 ];
 
-export const pastPresidents: PastPresident[] = [];
+export const pastPresidents: PastPresident[] = [
+  {
+    ...meta("past_president:zahirul-islam"),
+    name_en: "Mohammed Zahirul Islam (Rinku)",
+    name_bn: "মোহাম্মদ জহিরুল ইসলাম (রিংকু)",
+    term_start: 2025,
+    term_end: 2026,
+    organization_en: "Managing Director, PHP Ship Breaking and Recycling Industries Ltd",
+    organization_bn: "ব্যবস্থাপনা পরিচালক, পিএইচপি শিপ ব্রেকিং অ্যান্ড রিসাইক্লিং ইন্ডাস্ট্রিজ লিমিটেড",
+    photo: PHOTOS.mohammedZahirulIslam.src,
+    bio_en: "Served as Acting President and long-standing Vice President of BSBRA. Spearheaded Bangladesh's green recycling revolution, achieving the nation's first HKC Statement of Compliance in 2017.",
+    bio_bn: "বিএসবিআরএ-এর ভারপ্রাপ্ত সভাপতি ও দীর্ঘকালীন সহ-সভাপতি হিসেবে দায়িত্ব পালন করেন। ২০১৭ সালে দেশের প্রথম এইচকেসি স্টেটমেন্ট অব কমপ্লায়েন্স অর্জনকারী গ্রিন ইয়ার্ড প্রতিষ্ঠা করেন।",
+    email: "zahir@phpfamily.com",
+    show_contact: false,
+    sort_order: 1,
+    is_published: true,
+  },
+  {
+    ...meta("past_president:abu-taher"),
+    name_en: "Alhaj Mohammad Abu Taher",
+    name_bn: "আলহাজ্ব মোহাম্মদ আবু তাহের",
+    term_start: 2014,
+    term_end: 2024,
+    organization_en: "Chairman, Taher Group / Taher & Company Ltd",
+    organization_bn: "চেয়ারম্যান, তাহের গ্রুপ / তাহের অ্যান্ড কোম্পানি লিমিটেড",
+    photo: PHOTOS.alhajMohammadAbuTaher.src,
+    bio_en: "Long-standing President of BSBRA across consecutive terms. Represented the domestic ship recycling industry before the Ministry of Industries, IMO, and international maritime delegations.",
+    bio_bn: "বিএসবিআরএ-এর দীর্ঘকালীন সভাপতি যিনি টানা একাধিক মেয়াদে দায়িত্ব পালন করেন। শিল্প মন্ত্রণালয়, আইএমও ও আন্তর্জাতিক প্রতিনিধিদের সামনে দেশীয় শিল্পের স্বার্থ তুলে ধরেন।",
+    email: null,
+    show_contact: false,
+    sort_order: 2,
+    is_published: true,
+  },
+  {
+    ...meta("past_president:hefazatur-rahman"),
+    name_en: "Hefazatur Rahman",
+    name_bn: "হেফাজতুর রহমান",
+    term_start: 2011,
+    term_end: 2014,
+    organization_en: "Chairman, Mostafa Hakim Group / HM Shipping Lines Ltd",
+    organization_bn: "চেয়ারম্যান, মোস্তফা হাকিম গ্রুপ / এইচএম শিপিং লাইনস লিমিটেড",
+    photo: null,
+    bio_en: "Elected President of the association from 2011 to 2014, leading institutional engagement for occupational health, environmental clearance frameworks, and worker welfare.",
+    bio_bn: "২০১১ থেকে ২০১৪ মেয়াদের নির্বাচিত সভাপতি, যিনি শ্রমিকের পেশাগত স্বাস্থ্য ও পরিবেশগত ছাড়পত্র কাঠামো তৈরিতে বলিষ্ঠ ভূমিকা পালন করেন।",
+    email: null,
+    show_contact: false,
+    sort_order: 3,
+    is_published: true,
+  },
+  {
+    ...meta("past_president:amzad-hossain"),
+    name_en: "Amzad Hossain Chowdhury",
+    name_bn: "আমজাদ হোসেন চৌধুরী",
+    term_start: 2008,
+    term_end: 2011,
+    organization_en: "Former President, Bangladesh Ship Breakers Association",
+    organization_bn: "সাবেক সভাপতি, বাংলাদেশ শিপ ব্রেকার্স অ্যাসোসিয়েশন",
+    photo: null,
+    bio_en: "Veteran industrialist and former President of the association during the formative transition toward regulated coastal ship dismantling.",
+    bio_bn: "প্রবীণ শিল্পপতি এবং উপকূলীয় নিয়মতান্ত্রিক জাহাজভাঙা কার্যক্রমের সূচনালগ্নে সংগঠনের সভাপতি।",
+    email: null,
+    show_contact: false,
+    sort_order: 4,
+    is_published: true,
+  },
+  {
+    ...meta("past_president:shahjahan"),
+    name_en: "Alhaj Md. Shahjahan",
+    name_bn: "আলহাজ্ব মো. শাহজাহান",
+    term_start: 2004,
+    term_end: 2008,
+    organization_en: "Chairman & Managing Director, Kabir Steel Ltd (KSRM)",
+    organization_bn: "চেয়ারম্যান ও ব্যবস্থাপনা পরিচালক, কবির স্টিল লিমিটেড (কেএসআরএম)",
+    photo: PHOTOS.alhajMdShahjahan.src,
+    bio_en: "Eminent maritime industrialist and pioneer of modern steel re-rolling and compliant ship recycling facilities in Chattogram.",
+    bio_bn: "বিশিষ্ট শিল্পপতি এবং চট্টগ্রামে আধুনিক রি-রোলিং মিলস ও আধুনিক জাহাজ পুনর্ব্যবহার স্থাপনার পথপ্রদর্শক।",
+    email: "karim@ksrm.com.bd",
+    show_contact: false,
+    sort_order: 5,
+    is_published: true,
+  },
+];
 
 // ---------------------------------------------------------------------------
 // Newsroom
@@ -413,34 +795,118 @@ function post(input: PostInput): Post {
 
 export const posts: Post[] = [
   post({
+    slug: "bsrb-inspects-ziri-subedar-yard",
+    type: "activity",
+    published_at: "2026-07-28T04:35:49.000Z",
+    is_featured: true,
+    cover_image: PHOTOS.ziriSubedarInspection1.src,
+    event_date: "2026-07-28T03:30:00.000Z",
+    event_location_en: "Ziri Subedar Ship Recycling Yard, Bhatiyari, Sitakunda",
+    event_location_bn: "জিরি সুবেদার শিপ রিসাইক্লিং ইয়ার্ড, ভাটিয়ারী, সীতাকুণ্ড",
+    title_en: "BSRB Technical Team inspects Ziri Subedar Yard for HKC compliance",
+    title_bn: "এইচকেসি কমপ্লায়েন্স যাচাইয়ে জিরি সুবেদার ইয়ার্ড পরিদর্শন করল বিএসআরবি টেকনিক্যাল টিম",
+    excerpt_en:
+      "A technical team from the Bangladesh Ship Recycling Board conducted an on-site verification of yard development, impermeable concrete flooring, and drainage in Sitakunda.",
+    excerpt_bn:
+      "বাংলাদেশ শিপ রিসাইক্লিং বোর্ডের কারিগরি প্রতিনিধিদল জিরি সুবেদার ইয়ার্ডের অবকাঠামোগত উন্নয়ন, ড্রেনেজ ও কমপ্লায়েন্স মান যাচাই করেছে।",
+    body_en: `The Technical Team of the Bangladesh Ship Recycling Board (BSRB) inspected the Ziri Subedar Ship Recycling Facility (Ferdous Steel Ship Recycling Industries, DASR: BSRB/2025/SRF 009) in Bhatiyari, Sitakunda.
+
+The on-site inspection evaluated required yard development verification in compliance with the Hong Kong Convention (HKC), including:
+- Impermeable concrete primary and secondary work floors.
+- Stormwater drainage and oil-water separation systems preventing seaward runoff.
+- Dedicated hazardous waste isolation shed and chemical storage.
+- Personal protective equipment (PPE) compliance and worker emergency response readiness.`,
+    body_bn: `বাংলাদেশ শিপ রিসাইক্লিং বোর্ডের (বিএসআরবি) কারিগরি দল সীতাকুণ্ডের ভাটিয়ারীতে অবস্থিত জিরি সুবেদার শিপ রিসাইক্লিং ফ্যাসিলিটি (ফেরদৌস স্টিল শিপ রিসাইক্লিং ইন্ডাস্ট্রিজ, ডিএএসআর: BSRB/2025/SRF 009) সরেজমিনে পরিদর্শন করেছে।
+
+পরিদর্শনে হংকং কনভেনশন (এইচকেসি) অনুযায়ী প্রয়োজনীয় ইয়ার্ড উন্নয়ন যাচাই করা হয়:
+- অপ্রবেশ্য কংক্রিটের প্রাইমারি ও সেকেন্ডারি ওয়ার্ক ফ্লোর।
+- সমুদ্রের পানিতে তেল মিশ্রণ রোধে ড্রেনেজ ও অয়েল-ওয়াটার সেপারেটর ব্যবস্থা।
+- নির্ধারিত বিপজ্জনক বর্জ্য আইসোলেশন শেড ও রাসায়নিক সংরক্ষণাগার।
+- বাধ্যতামূলক ব্যক্তিগত সুরক্ষা সরঞ্জাম (পিপিই) এবং জরুরি উদ্ধার প্রস্তুতি।`,
+    source_name: "Bangladesh Ship Recycling Board (BSRB)",
+    external_url: "https://bsrb.gov.bd/director-general-of-bsrb-visits-bitac-with-jica-team-to-explore-hands-on-ship-recycling-training-copy/",
+  }),
+  post({
+    slug: "bsrb-jica-training-center-feasibility",
+    type: "activity",
+    published_at: "2026-07-26T11:56:48.000Z",
+    is_featured: true,
+    cover_image: PHOTOS.bsrbJicaTraining.src,
+    event_date: "2026-07-26T04:00:00.000Z",
+    event_location_en: "BITAC, Chattogram",
+    event_location_bn: "বিটাক, চট্টগ্রাম",
+    title_en: "BSRB Director General and JICA team explore hands-on training center at BITAC",
+    title_bn: "হাতে-কলমে প্রশিক্ষণ কেন্দ্র প্রতিষ্ঠায় জাইকা টিম নিয়ে বিটাক পরিদর্শন করলেন বিএসআরবি মহাপরিচালক",
+    excerpt_en:
+      "BSRB Director General ASM Shafiul Alam Talukder and the JICA Team led by Dr. Akira Okamoto conducted a feasibility study at BITAC Chattogram to establish a ship recycling training facility.",
+    excerpt_bn:
+      "জাহাজ পুনর্ব্যবহার শিল্পের কর্মীদের জন্য প্রশিক্ষণ কেন্দ্র গড়ে তুলতে বিএসআরবি মহাপরিচালক ও জাইকা টিম বিটাক চট্টগ্রাম পরিদর্শন করেছে।",
+    body_en: `Bangladesh Ship Recycling Board (BSRB) Director General Mr. ASM Shafiul Alam Talukder visited the Bangladesh Industrial Technical Assistance Centre (BITAC), Chattogram, together with the JICA Team led by Dr. Akira Okamoto, as part of a feasibility study to establish a Hands-on Training Centre for the Ship Recycling Industry.
+
+The visit focused on assessing BITAC's technical capabilities and exploring opportunities to develop a modern training facility that will strengthen the skills of Bangladesh's ship recycling workforce. This initiative aims to enhance occupational safety, technical excellence, environmental compliance, and support the implementation of international standards under the Hong Kong Convention (HKC).`,
+    body_bn: `বাংলাদেশ শিপ রিসাইক্লিং বোর্ডের (বিএসআরবি) মহাপরিচালক জনাব এএসএম শফিউল আলম তালুকদার জাইকা দলের প্রধান ড. আকিরা ওকামতো-কে সাথে নিয়ে বাংলাদেশ শিল্প কারিগরি সহায়তা কেন্দ্র (বিটাক) চট্টগ্রাম পরিদর্শন করেন।
+
+এ পরিদর্শনের লক্ষ্য ছিল জাহাজ পুনর্ব্যবহার শিল্পের কর্মীদের জন্য একটি আধুনিক ব্যবহারিক প্রশিক্ষণ কেন্দ্র গড়ে তোলার কারিগরি সক্ষমতা মূল্যায়ন করা, যা হংকং কনভেনশন বাস্তবায়নে পেশাগত সুরক্ষা, প্রযুক্তিগত মান এবং পরিবেশগত কমপ্লায়েন্স জোরদার করবে।`,
+    source_name: "Bangladesh Ship Recycling Board (BSRB)",
+    external_url: "https://bsrb.gov.bd/director-general-of-bsrb-visits-bitac-with-jica-team-to-explore-hands-on-ship-recycling-training/",
+  }),
+  post({
+    slug: "bsrb-chattogram-office-fully-operational",
+    type: "announcement",
+    published_at: "2026-07-26T11:54:28.000Z",
+    cover_image: PHOTOS.bsrbOffice.src,
+    title_en: "Bangladesh Ship Recycling Board office in Chattogram is fully operational",
+    title_bn: "চট্টগ্রামে বাংলাদেশ শিপ রিসাইক্লিং বোর্ডের পূর্ণাঙ্গ কার্যালয় চালু",
+    excerpt_en:
+      "Located at Level-8 of the Divisional BSTI Building in Agrabad, the BSRB office provides dedicated on-the-ground administration for Sitakunda yards.",
+    excerpt_bn:
+      "আগ্রাবাদের বিভাগীয় বিএসটিআই ভবনের ৮ম তলায় বিএসআরবির চট্টগ্রাম কার্যালয় এখন পূর্ণাঙ্গভাবে কার্যকর।",
+    body_en: `The Bangladesh Ship Recycling Board (BSRB) is now fully operational from its regional headquarters in Chattogram, situated at Level-8, Divisional Building (BSTI), Agrabad, Chattogram-4100.
+
+As the statutory national regulatory authority under the Ministry of Industries, BSRB oversees:
+- Ensuring full compliance with the Hong Kong International Convention (HKC).
+- Document of Authorization to Conduct Ship Recycling (DASR) verifications.
+- Enhancing worker health, safety standards, and PPE compliance.
+- Transparent coordination between ship recyclers, ministries, and international partners.`,
+    body_bn: `চট্টগ্রামের আগ্রাবাদে বিভাগীয় বিএসটিআই ভবনের ৮ম তলায় বাংলাদেশ শিপ রিসাইক্লিং বোর্ড (বিএসআরবি) তাদের পূর্ণাঙ্গ কার্যক্রম পরিচালনা করছে।
+
+শিল্প মন্ত্রণালয়ের অধীন সংবিধিবদ্ধ নিয়ন্ত্রক সংস্থা হিসেবে বিএসআরবি নিশ্চিত করছে:
+- হংকং আন্তর্জাতিক কনভেনশন (এইচকেসি) পূর্ণ বাস্তবায়ন।
+- ডিএএসআর অনুমোদন ও নিয়মিত ইয়ার্ড পরিদর্শন।
+- শ্রমিক স্বাস্থ্য ও সুরক্ষা মান উন্নয়ন।
+- জাহাজ পুনর্ব্যবহারকারী, সরকারি মন্ত্রণালয় ও আন্তর্জাতিক অংশীজনদের মাঝে সমন্বয়।`,
+    source_name: "Bangladesh Ship Recycling Board (BSRB)",
+    external_url: "https://bsrb.gov.bd/full-functioning-of-bangladesh-ship-recycling-board-office-in-chattogram/",
+  }),
+  post({
     slug: "bsbra-platform-launch",
     type: "announcement",
     published_at: "2026-10-01T09:00:00.000Z",
     is_featured: true,
-    cover_image: "/art/bathymetry.svg",
+    cover_image: PHOTOS.cranes.src,
     title_en: "BSBRA launches its new digital platform",
     title_bn: "বিএসবিআরএ-এর নতুন ডিজিটাল প্ল্যাটফর্ম চালু",
     excerpt_en:
-      "Industry statistics, a yard-wise vessel database, green yard profiles, tide tables and a members' portal — now in one bilingual platform.",
+      "Industry statistics, the IMO-listed green yards, live tide forecasts, a vessel database and a members' portal — now in one bilingual platform.",
     excerpt_bn:
-      "শিল্প পরিসংখ্যান, ইয়ার্ডভিত্তিক জাহাজ ডেটাবেস, গ্রিন ইয়ার্ডের তথ্য, জোয়ার-ভাটার সারণি ও সদস্য পোর্টাল — এখন একটি দ্বিভাষিক প্ল্যাটফর্মে।",
+      "শিল্প পরিসংখ্যান, আইএমও তালিকাভুক্ত গ্রিন ইয়ার্ড, জোয়ার-ভাটার লাইভ পূর্বাভাস, জাহাজ ডেটাবেস ও সদস্য পোর্টাল — এখন একটি দ্বিভাষিক প্ল্যাটফর্মে।",
     body_en: `BSBRA's new platform brings the Bangladesh ship recycling industry's information together in one place, in English and Bangla.
 
 ## What's new
-- **Industry statistics** — year-wise vessels, LDT, beachings and active yards, with downloadable data.
-- **Vessel database** — a searchable, yard-wise record of vessels beached and recycled.
-- **Green & progressive yards** — profiles of Hong Kong Convention-compliant facilities.
-- **Tide & beaching** — monthly high and low tide tables.
+- **Industry statistics** — year-wise ship counts with sources, downloadable as CSV.
+- **Green yards** — the 17 Bangladeshi yards on the IMO list of authorised facilities.
+- **Tide & beaching** — a live tide and sea-state forecast for the Sitakunda coast, alongside official tables.
+- **Vessel database** — a searchable, yard-wise record maintained by the secretariat.
 - **Members' portal** — circulars, minutes and resources for members and corporate partners.
 
 Members and partners can request an account from the sign-in page.`,
     body_bn: `বিএসবিআরএ-এর নতুন প্ল্যাটফর্ম বাংলাদেশের জাহাজ পুনর্ব্যবহার শিল্পের তথ্য এক জায়গায়, ইংরেজি ও বাংলায় নিয়ে এসেছে।
 
 ## নতুন যা আছে
-- **শিল্প পরিসংখ্যান** — বছরভিত্তিক জাহাজ, এলডিটি, বিচিং ও সক্রিয় ইয়ার্ড, ডাউনলোডযোগ্য তথ্যসহ।
-- **জাহাজ ডেটাবেস** — বিচিং ও পুনর্ব্যবহৃত জাহাজের ইয়ার্ডভিত্তিক, অনুসন্ধানযোগ্য রেকর্ড।
-- **গ্রিন ও প্রগ্রেসিভ ইয়ার্ড** — হংকং কনভেনশন-সম্মত স্থাপনাগুলোর পরিচিতি।
-- **জোয়ার-ভাটা ও বিচিং** — মাসিক জোয়ার-ভাটার সারণি।
+- **শিল্প পরিসংখ্যান** — উৎসসহ বছরভিত্তিক জাহাজের সংখ্যা, সিএসভি আকারে ডাউনলোডযোগ্য।
+- **গ্রিন ইয়ার্ড** — আইএমও-র অনুমোদিত স্থাপনার তালিকাভুক্ত বাংলাদেশের ১৭টি ইয়ার্ড।
+- **জোয়ার-ভাটা ও বিচিং** — দাপ্তরিক সারণির পাশাপাশি সীতাকুণ্ড উপকূলের জোয়ার ও সমুদ্র-পরিস্থিতির লাইভ পূর্বাভাস।
+- **জাহাজ ডেটাবেস** — সচিবালয় পরিচালিত, ইয়ার্ডভিত্তিক ও অনুসন্ধানযোগ্য রেকর্ড।
 - **সদস্য পোর্টাল** — সদস্য ও কর্পোরেট অংশীদারদের জন্য সার্কুলার, কার্যবিবরণী ও রিসোর্স।
 
 সদস্য ও অংশীদাররা সাইন-ইন পৃষ্ঠা থেকে অ্যাকাউন্টের অনুরোধ করতে পারেন।`,
@@ -450,67 +916,88 @@ Members and partners can request an account from the sign-in page.`,
     type: "activity",
     published_at: "2026-07-05T08:00:00.000Z",
     is_featured: true,
-    cover_image: "/art/meridian.svg",
     event_date: "2026-07-04T04:00:00.000Z",
-    event_location_en: "Chattogram",
-    event_location_bn: "চট্টগ্রাম",
+    event_location_en: "Radisson Blu Chattogram Bay View, Chattogram",
+    event_location_bn: "র‍্যাডিসন ব্লু চট্টগ্রাম বে ভিউ, চট্টগ্রাম",
     title_en: "BSBRA elects its Executive Committee for 2026–2028",
     title_bn: "২০২৬–২০২৮ মেয়াদের কার্যনির্বাহী কমিটি নির্বাচিত",
     excerpt_en:
-      "Mohammad Mohsin Chowdhury has been elected President of BSBRA, following an election held in Chattogram on 4 July 2026.",
-    excerpt_bn: "২০২৬ সালের ৪ জুলাই চট্টগ্রামে অনুষ্ঠিত নির্বাচনে মোহাম্মদ মোহসিন চৌধুরী বিএসবিআরএ-এর সভাপতি নির্বাচিত হয়েছেন।",
-    body_en: `Members of the Bangladesh Ship Breakers & Recyclers Association elected a new Executive Committee for the 2026–27 and 2027–28 terms on 4 July 2026 in Chattogram. Of the association's 84 voters, 71 cast their ballots.
+      "Mohammad Mohsin Chowdhury was elected President unopposed at the association's election in Chattogram on 4 July 2026.",
+    excerpt_bn: "২০২৬ সালের ৪ জুলাই চট্টগ্রামে সংগঠনের নির্বাচনে মোহাম্মদ মহসিন চৌধুরী বিনা প্রতিদ্বন্দ্বিতায় সভাপতি নির্বাচিত হয়েছেন।",
+    body_en: `Members of the Bangladesh Ship Breakers & Recyclers Association elected a new Executive Committee on 4 July 2026 at the Radisson Blu Chattogram Bay View. Of 84 eligible voters, 71 cast their ballots; 14 candidates contested 11 executive posts, and the presidency was uncontested.
 
 ## Office bearers
-- **President:** Mohammad Mohsin Chowdhury
+- **President:** Mohammad Mohsin Chowdhury, Vice Chairman of PHP Family
 - **Senior Vice President:** Mohammad Selim Uddin
-- **Vice Presidents:** Nur Uddin and Gazi Mukarram Ali Chowdhury
+- **Vice Presidents:** Md Nuruddin Rubel and Gazi Mokarram Ali Chowdhury
 
-The new committee takes office as the industry continues its transition to recycling under the Hong Kong Convention.`,
-    body_bn: `২০২৬ সালের ৪ জুলাই চট্টগ্রামে বাংলাদেশ শিপ ব্রেকার্স অ্যান্ড রিসাইক্লার্স অ্যাসোসিয়েশনের সদস্যরা ২০২৬–২৭ ও ২০২৭–২৮ মেয়াদের জন্য নতুন কার্যনির্বাহী কমিটি নির্বাচন করেছেন। সংগঠনের ৮৪ জন ভোটারের মধ্যে ৭১ জন ভোট দিয়েছেন।
+## Executive members
+Md Jahedul Haque, Md Taslim Uddin, SM Nurun Nabi, Md Ferdous Wahid, Obaida Asadi, Hosainul Arefin and AKM Saifullah Sayeed.
+
+The election, originally scheduled for October 2025, was held after a new election board was formed.`,
+    body_bn: `২০২৬ সালের ৪ জুলাই র‍্যাডিসন ব্লু চট্টগ্রাম বে ভিউতে বাংলাদেশ শিপ ব্রেকার্স অ্যান্ড রিসাইক্লার্স অ্যাসোসিয়েশনের সদস্যরা নতুন কার্যনির্বাহী কমিটি নির্বাচন করেছেন। ৮৪ জন ভোটারের মধ্যে ৭১ জন ভোট দিয়েছেন; ১১টি কার্যনির্বাহী পদে ১৪ জন প্রার্থী ছিলেন, আর সভাপতি পদে কোনো প্রতিদ্বন্দ্বী ছিল না।
 
 ## পদাধিকারী
-- **সভাপতি:** মোহাম্মদ মোহসিন চৌধুরী
+- **সভাপতি:** মোহাম্মদ মহসিন চৌধুরী, ভাইস চেয়ারম্যান, পিএইচপি ফ্যামিলি
 - **সিনিয়র সহ-সভাপতি:** মোহাম্মদ সেলিম উদ্দিন
-- **সহ-সভাপতি:** নুর উদ্দিন ও গাজী মুকাররম আলী চৌধুরী
+- **সহ-সভাপতি:** মো. নুরুদ্দিন রুবেল ও গাজী মোকাররম আলী চৌধুরী
 
-হংকং কনভেনশনের আওতায় শিল্পের রূপান্তর অব্যাহত থাকার এই সময়ে নতুন কমিটি দায়িত্ব নিচ্ছে।`,
+## কার্যনির্বাহী সদস্য
+মো. জাহেদুল হক, মো. তাসলিম উদ্দিন, এস এম নুরুন নবী, মো. ফেরদৌস ওয়াহিদ, ওবায়দা আসাদী, হোসাইনুল আরেফিন ও একেএম সাইফুল্লাহ সাঈদ।
+
+২০২৫ সালের অক্টোবরে নির্ধারিত নির্বাচনটি নতুন নির্বাচন বোর্ড গঠনের পর অনুষ্ঠিত হয়।`,
   }),
   post({
-    slug: "yard-safety-week-2026",
-    type: "event",
-    published_at: "2026-09-20T09:00:00.000Z",
-    cover_image: "/art/swell.svg",
-    event_date: "2026-11-15T03:00:00.000Z",
-    event_location_en: "Sitakunda, Chattogram",
-    event_location_bn: "সীতাকুণ্ড, চট্টগ্রাম",
-    title_en: "Yard Safety Week 2026",
-    title_bn: "ইয়ার্ড সেফটি উইক ২০২৬",
-    excerpt_en: "A week of drills, training and awareness sessions across member yards, focused on hot-work and fire safety.",
-    excerpt_bn: "হট-ওয়ার্ক ও অগ্নি নিরাপত্তাকে কেন্দ্র করে সদস্য ইয়ার্ডগুলোতে এক সপ্তাহের মহড়া, প্রশিক্ষণ ও সচেতনতা কার্যক্রম।",
-    body_en: `Member yards will run fire drills, gas-free testing demonstrations and refresher training throughout the week. Supervisors will receive updated guidance on permit-to-work procedures.`,
-    body_bn: `সপ্তাহজুড়ে সদস্য ইয়ার্ডগুলোতে অগ্নি মহড়া, গ্যাস-ফ্রি পরীক্ষার প্রদর্শনী ও রিফ্রেশার প্রশিক্ষণ হবে। সুপারভাইজাররা পারমিট-টু-ওয়ার্ক পদ্ধতি বিষয়ে হালনাগাদ নির্দেশনা পাবেন।`,
+    slug: "seventeen-yards-on-imo-list",
+    type: "industry_update",
+    published_at: "2026-05-18T03:00:00.000Z",
+    is_featured: true,
+    cover_image: PHOTOS.imoGreenYard.src,
+    title_en: "17 Bangladeshi yards join the IMO list of authorised recycling facilities",
+    title_bn: "আইএমও-র অনুমোদিত পুনর্ব্যবহার স্থাপনার তালিকায় বাংলাদেশের ১৭টি ইয়ার্ড",
+    excerpt_en:
+      "With 17 yards in Sitakunda listed under the Hong Kong Convention, Bangladesh has the second-largest number of authorised facilities in the world.",
+    excerpt_bn:
+      "হংকং কনভেনশনের আওতায় সীতাকুণ্ডের ১৭টি ইয়ার্ড তালিকাভুক্ত হওয়ায় অনুমোদিত স্থাপনার সংখ্যায় বাংলাদেশ এখন বিশ্বে দ্বিতীয়।",
+    body_en: `Seventeen ship recycling yards in Sitakunda, Chattogram, are now on the International Maritime Organization's list of facilities authorised under the Hong Kong Convention. Their authorisations, issued by the Bangladesh Ship Recycling Board, are valid until 29 October 2030.
+
+Only Turkey, with 18, has more listed facilities. Bangladesh was among the first countries to submit a list of compliant yards to the IMO after the convention entered into force.
+
+See all 17 yards on the Green Yards page.`,
+    body_bn: `চট্টগ্রামের সীতাকুণ্ডের ১৭টি জাহাজ পুনর্ব্যবহার ইয়ার্ড এখন হংকং কনভেনশনের আওতায় অনুমোদিত স্থাপনার আন্তর্জাতিক সমুদ্র সংস্থার (আইএমও) তালিকায়। বাংলাদেশ শিপ রিসাইক্লিং বোর্ডের দেওয়া এসব অনুমোদন ২০৩০ সালের ২৯ অক্টোবর পর্যন্ত বৈধ।
+
+কেবল তুরস্কের (১৮টি) তালিকাভুক্ত স্থাপনা বেশি। কনভেনশন কার্যকর হওয়ার পর আইএমও-তে কমপ্লায়েন্ট ইয়ার্ডের তালিকা জমা দেওয়া প্রথম দেশগুলোর একটি বাংলাদেশ।
+
+গ্রিন ইয়ার্ড পৃষ্ঠায় ১৭টি ইয়ার্ডই দেখুন।`,
+    source_name: "The Business Standard",
+    external_url: "https://www.tbsnews.net/economy/industry/bangladesh-ranks-second-globally-17-imo-authorised-ship-recycling-yards-1441936",
   }),
   post({
-    slug: "workshop-ship-recycling-facility-plans",
-    type: "workshop",
-    published_at: "2026-08-22T09:00:00.000Z",
-    cover_image: "/art/monsoon.svg",
-    event_date: "2026-08-20T04:00:00.000Z",
-    event_location_en: "Chattogram",
-    event_location_bn: "চট্টগ্রাম",
-    title_en: "Workshop: preparing Ship Recycling Facility Plans",
-    title_bn: "কর্মশালা: শিপ রিসাইক্লিং ফ্যাসিলিটি প্ল্যান প্রস্তুতি",
-    excerpt_en: "Yard managers worked through the elements of a Ship Recycling Facility Plan under the Hong Kong Convention.",
-    excerpt_bn: "হংকং কনভেনশনের আওতায় শিপ রিসাইক্লিং ফ্যাসিলিটি প্ল্যানের উপাদানগুলো নিয়ে ইয়ার্ড ব্যবস্থাপকরা কাজ করেছেন।",
-    body_en: `The workshop covered facility layout, hazardous-material management, emergency preparedness, worker training and record keeping — the building blocks of a compliant Ship Recycling Facility Plan.`,
-    body_bn: `কর্মশালায় স্থাপনার বিন্যাস, বিপজ্জনক উপকরণ ব্যবস্থাপনা, জরুরি প্রস্তুতি, শ্রমিক প্রশিক্ষণ ও রেকর্ড সংরক্ষণ — একটি কমপ্লায়েন্ট শিপ রিসাইক্লিং ফ্যাসিলিটি প্ল্যানের মূল উপাদানগুলো আলোচনা করা হয়।`,
+    slug: "adviser-visits-ksrm-yard",
+    type: "activity",
+    published_at: "2025-07-26T12:00:00.000Z",
+    cover_image: PHOTOS.ksrmVisit.src,
+    event_date: "2025-07-26T05:00:00.000Z",
+    event_location_en: "KSRM ship recycling yard, Sitakunda",
+    event_location_bn: "কেএসআরএম জাহাজ পুনর্ব্যবহার ইয়ার্ড, সীতাকুণ্ড",
+    title_en: "Shipping and Labour Adviser visits a Sitakunda recycling yard",
+    title_bn: "সীতাকুণ্ডের পুনর্ব্যবহার ইয়ার্ড পরিদর্শনে নৌপরিবহন ও শ্রম উপদেষ্টা",
+    excerpt_en:
+      "Brigadier General (Retd.) Dr M. Sakhawat Hossain, Adviser for Shipping and for Labour and Employment, toured the KSRM yard on 26 July 2025.",
+    excerpt_bn:
+      "নৌপরিবহন এবং শ্রম ও কর্মসংস্থান উপদেষ্টা ব্রিগেডিয়ার জেনারেল (অব.) ড. এম সাখাওয়াত হোসেন ২০২৫ সালের ২৬ জুলাই কেএসআরএম ইয়ার্ড পরিদর্শন করেন।",
+    body_en: `Brigadier General (Retd.) Dr M. Sakhawat Hossain, Adviser to the Ministry of Shipping and the Ministry of Labour and Employment, visited ship recycling operations at the KSRM yard in Sitakunda, Chattogram, on 26 July 2025.
+
+Photograph: Press Information Department, Government of Bangladesh (public domain).`,
+    body_bn: `নৌপরিবহন মন্ত্রণালয় এবং শ্রম ও কর্মসংস্থান মন্ত্রণালয়ের উপদেষ্টা ব্রিগেডিয়ার জেনারেল (অব.) ড. এম সাখাওয়াত হোসেন ২০২৫ সালের ২৬ জুলাই চট্টগ্রামের সীতাকুণ্ডে কেএসআরএম ইয়ার্ডের জাহাজ পুনর্ব্যবহার কার্যক্রম পরিদর্শন করেন।
+
+ছবি: তথ্য অধিদপ্তর (পিআইডি), বাংলাদেশ সরকার (পাবলিক ডোমেইন)।`,
   }),
   post({
     slug: "hong-kong-convention-enters-into-force",
     type: "industry_update",
     published_at: "2025-06-26T06:00:00.000Z",
-    cover_image: "/art/delta.svg",
+    cover_image: PHOTOS.cranes.src,
     title_en: "The Hong Kong Convention enters into force",
     title_bn: "হংকং কনভেনশন কার্যকর",
     excerpt_en:
@@ -520,114 +1007,102 @@ The new committee takes office as the industry continues its transition to recyc
 
 The convention covers the whole life of a ship — from design and an Inventory of Hazardous Materials to the authorisation of recycling facilities and the preparation of a ship-specific recycling plan.
 
-For Bangladesh, which acceded in 2023, entry into force marks the start of a new operating standard for every yard.`,
+For Bangladesh, which ratified it in June 2023, entry into force marks the start of a new operating standard for every yard.`,
     body_bn: `আইএমও-র জাহাজের নিরাপদ ও পরিবেশসম্মত পুনর্ব্যবহার বিষয়ক হংকং আন্তর্জাতিক কনভেনশন গৃহীত হওয়ার ষোলো বছর পর ২০২৫ সালের ২৬ জুন কার্যকর হয়েছে।
 
 কনভেনশনটি জাহাজের পুরো জীবনচক্র জুড়ে প্রযোজ্য — নকশা ও বিপজ্জনক উপকরণের তালিকা থেকে শুরু করে পুনর্ব্যবহার স্থাপনার অনুমোদন এবং জাহাজভিত্তিক পুনর্ব্যবহার পরিকল্পনা পর্যন্ত।
 
-২০২৩ সালে যোগ দেওয়া বাংলাদেশের জন্য এটি প্রতিটি ইয়ার্ডে নতুন কর্মমানের সূচনা।`,
+২০২৩ সালের জুনে অনুসমর্থনকারী বাংলাদেশের জন্য এটি প্রতিটি ইয়ার্ডে নতুন কর্মমানের সূচনা।`,
+    external_url: "https://www.imo.org/en/ourwork/environment/pages/ship-recycling.aspx",
+    source_name: "International Maritime Organization",
   }),
   post({
-    slug: "tide-tables-2026-published",
-    type: "announcement",
-    published_at: "2026-01-05T09:00:00.000Z",
-    title_en: "Tide tables for 2026 published",
-    title_bn: "২০২৬ সালের জোয়ার-ভাটার সারণি প্রকাশিত",
-    excerpt_en: "Monthly high and low tide tables for the Sitakunda coast are now available on the Tide & Beaching page.",
-    excerpt_bn: "সীতাকুণ্ড উপকূলের মাসিক জোয়ার-ভাটার সারণি এখন জোয়ার-ভাটা ও বিচিং পৃষ্ঠায় পাওয়া যাচ্ছে।",
-  }),
-  post({
-    slug: "bangladesh-accedes-to-hong-kong-convention",
+    slug: "bangladesh-ratifies-hong-kong-convention",
     type: "international",
-    published_at: "2023-06-26T06:00:00.000Z",
-    cover_image: "/art/delta.svg",
-    title_en: "Bangladesh accedes to the Hong Kong Convention",
-    title_bn: "হংকং কনভেনশনে বাংলাদেশের যোগদান",
+    published_at: "2023-06-27T09:30:00.000Z",
+    cover_image: PHOTOS.sunset.src,
+    title_en: "Bangladesh ratifies the Hong Kong Convention",
+    title_bn: "হংকং কনভেনশন অনুসমর্থন করল বাংলাদেশ",
     excerpt_en:
-      "Bangladesh's accession, alongside Liberia's, met the convention's entry-into-force criteria, setting the date for 26 June 2025.",
-    excerpt_bn: "লাইবেরিয়ার সঙ্গে বাংলাদেশের যোগদানে কনভেনশন কার্যকর হওয়ার শর্ত পূরণ হয়, যা ২০২৫ সালের ২৬ জুন তারিখ নির্ধারণ করে।",
-    body_en: `Bangladesh deposited its instrument of accession to the Hong Kong Convention with the IMO in June 2023. Together with Liberia's accession, it satisfied the convention's entry-into-force conditions, which took effect 24 months later.`,
-    body_bn: `২০২৩ সালের জুনে বাংলাদেশ আইএমও-তে হংকং কনভেনশনে যোগদানের দলিল জমা দেয়। লাইবেরিয়ার যোগদানের সঙ্গে মিলে এতে কনভেনশন কার্যকর হওয়ার শর্ত পূরণ হয়, যা ২৪ মাস পর কার্যকর হয়েছে।`,
+      "Bangladesh's instruments, handed to the IMO in London on 26 June 2023, helped the convention pass the threshold for entry into force.",
+    excerpt_bn: "২০২৩ সালের ২৬ জুন লন্ডনে আইএমও-তে জমা দেওয়া বাংলাদেশের দলিল কনভেনশন কার্যকর হওয়ার শর্ত পূরণে ভূমিকা রাখে।",
+    body_en: `Bangladesh's Permanent Representative to the IMO handed over the country's instruments of ratification at IMO headquarters in London on 26 June 2023. With Bangladesh and Liberia, the parties to the convention represented more than 40% of world merchant shipping by gross tonnage — the last condition for entry into force, which followed 24 months later.
+
+At the time, three Bangladeshi yards held green certification: PHP (since 2017), SN Corporation and Khwaja Ship Breaking.`,
+    body_bn: `২০২৩ সালের ২৬ জুন লন্ডনে আইএমও সদর দপ্তরে আইএমও-তে বাংলাদেশের স্থায়ী প্রতিনিধি দেশের অনুসমর্থনের দলিল হস্তান্তর করেন। বাংলাদেশ ও লাইবেরিয়ার অন্তর্ভুক্তিতে কনভেনশনের পক্ষভুক্ত দেশগুলোর অংশ বিশ্বের বাণিজ্যিক জাহাজের গ্রস টনেজের ৪০ শতাংশ ছাড়িয়ে যায় — কার্যকর হওয়ার শেষ শর্ত, যা ২৪ মাস পর কার্যকর হয়।
+
+সে সময় বাংলাদেশের তিনটি ইয়ার্ডের গ্রিন সনদ ছিল: পিএইচপি (২০১৭ থেকে), এসএন কর্পোরেশন ও খাজা শিপ ব্রেকিং।`,
+    source_name: "The Business Standard",
+    external_url: "https://www.tbsnews.net/bangladesh/hong-kong-convention-bangladesh-submits-instruments-will-get-status-june-2025-657198",
   }),
   post({
     slug: "sensrec-cooperation",
     type: "international",
-    published_at: "2026-03-10T06:00:00.000Z",
-    cover_image: "/art/drift.svg",
+    published_at: "2026-10-01T08:00:00.000Z",
+    cover_image: PHOTOS.imoGreenYard.src,
     title_en: "Building capacity with the IMO's SENSREC project",
     title_bn: "আইএমও-র সেনস্রেক প্রকল্পের মাধ্যমে সক্ষমতা উন্নয়ন",
     excerpt_en:
       "The IMO-executed, Norway-funded SENSREC project has supported studies, training and planning for safe and environmentally sound ship recycling in Bangladesh.",
     excerpt_bn:
       "আইএমও-বাস্তবায়িত ও নরওয়ের অর্থায়নে সেনস্রেক প্রকল্প বাংলাদেশে নিরাপদ ও পরিবেশসম্মত জাহাজ পুনর্ব্যবহারের জন্য গবেষণা, প্রশিক্ষণ ও পরিকল্পনায় সহায়তা দিয়েছে।",
-    body_en: `Through the SENSREC project (Safe and Environmentally Sound Ship Recycling in Bangladesh), the IMO and the Government of Bangladesh have worked on economic and environmental studies, worker training and improvements to the government's one-stop service for ship recycling permissions.`,
-    body_bn: `সেনস্রেক (সেইফ অ্যান্ড এনভায়রনমেন্টালি সাউন্ড শিপ রিসাইক্লিং ইন বাংলাদেশ) প্রকল্পের মাধ্যমে আইএমও ও বাংলাদেশ সরকার অর্থনৈতিক ও পরিবেশগত গবেষণা, শ্রমিক প্রশিক্ষণ এবং জাহাজ পুনর্ব্যবহারের অনুমতির জন্য সরকারের ওয়ান-স্টপ সেবার উন্নয়নে কাজ করেছে।`,
+    body_en: `Through the SENSREC project (Safe and Environmentally Sound Ship Recycling in Bangladesh), the IMO and the Government of Bangladesh have worked on economic and environmental studies, worker training and improvements to the government's one-stop service for ship recycling permissions. The project's report on the one-stop service is in Publications.`,
+    body_bn: `সেনস্রেক (সেইফ অ্যান্ড এনভায়রনমেন্টালি সাউন্ড শিপ রিসাইক্লিং ইন বাংলাদেশ) প্রকল্পের মাধ্যমে আইএমও ও বাংলাদেশ সরকার অর্থনৈতিক ও পরিবেশগত গবেষণা, শ্রমিক প্রশিক্ষণ এবং জাহাজ পুনর্ব্যবহারের অনুমতির জন্য সরকারের ওয়ান-স্টপ সেবার উন্নয়নে কাজ করেছে। ওয়ান-স্টপ সেবা বিষয়ে প্রকল্পের প্রতিবেদনটি প্রকাশনা অংশে রয়েছে।`,
   }),
   post({
-    slug: "statement-hkc-transition",
-    type: "statement",
-    published_at: "2025-07-02T06:00:00.000Z",
-    title_en: "Statement on the industry's transition to HKC-compliant recycling",
-    title_bn: "এইচকেসি-সম্মত পুনর্ব্যবহারে শিল্পের রূপান্তর বিষয়ে বিবৃতি",
-    excerpt_en: "BSBRA reaffirms its commitment to supporting every member yard through certification under the Hong Kong Convention.",
-    excerpt_bn: "হংকং কনভেনশনের আওতায় সনদপ্রাপ্তিতে প্রতিটি সদস্য ইয়ার্ডকে সহায়তার অঙ্গীকার পুনর্ব্যক্ত করেছে বিএসবিআরএ।",
-    body_en: `With the Hong Kong Convention now in force, BSBRA will continue to work with the Bangladesh Ship Recycling Board, classification societies and development partners so that every operating member yard can meet the convention's requirements.`,
-    body_bn: `হংকং কনভেনশন কার্যকর হওয়ায় প্রতিটি সক্রিয় সদস্য ইয়ার্ড যাতে কনভেনশনের শর্ত পূরণ করতে পারে, সেজন্য বিএসবিআরএ বাংলাদেশ শিপ রিসাইক্লিং বোর্ড, ক্লাসিফিকেশন সোসাইটি ও উন্নয়ন সহযোগীদের সঙ্গে কাজ অব্যাহত রাখবে।`,
-  }),
-  post({
-    slug: "coverage-bsbra-election-today",
+    slug: "coverage-bangladesh-loses-top-spot",
     type: "media_coverage",
-    published_at: "2026-07-04T02:00:00.000Z",
+    published_at: "2026-02-25T02:53:00.000Z",
     source_name: "The Financial Express",
-    external_url: "https://today.thefinancialexpress.com.bd/trade-market/bsbra-election-today-1783097128",
-    title_en: "BSBRA election today",
-    title_bn: "আজ বিএসবিআরএ নির্বাচন",
-    excerpt_en: "Coverage of the long-delayed BSBRA election held in Chattogram.",
-    excerpt_bn: "চট্টগ্রামে অনুষ্ঠিত দীর্ঘ প্রতীক্ষিত বিএসবিআরএ নির্বাচনের সংবাদ।",
+    external_url: "https://thefinancialexpress.com.bd/home/bangladesh-loses-top-spot-in-global-shipbreaking-as-imports-of-scrapped-vessels-drop-32pc",
+    title_en: "Bangladesh loses top spot in global shipbreaking as imports of scrapped vessels drop 32pc",
+    title_bn: "জাহাজ আমদানি ৩২ শতাংশ কমায় বৈশ্বিক জাহাজভাঙায় শীর্ষস্থান হারাল বাংলাদেশ",
+    excerpt_en: "Bangladesh imported 88 end-of-life ships in 2025, down from 130 in 2024, according to the NGO Shipbreaking Platform.",
+    excerpt_bn: "এনজিও শিপব্রেকিং প্ল্যাটফর্মের তথ্যমতে ২০২৫ সালে বাংলাদেশ ৮৮টি মেয়াদোত্তীর্ণ জাহাজ আমদানি করেছে, ২০২৪ সালে যা ছিল ১৩০টি।",
+  }),
+  post({
+    slug: "coverage-new-leadership",
+    type: "media_coverage",
+    published_at: "2026-07-05T02:00:00.000Z",
+    source_name: "The Daily Star",
+    external_url: "https://www.thedailystar.net/business/economy/news/ship-breakers-association-elects-new-leadership-4215841",
+    title_en: "Ship breakers' association elects new leadership",
+    title_bn: "জাহাজভাঙা মালিকদের সংগঠনে নতুন নেতৃত্ব",
+    excerpt_en: "Report on the 4 July 2026 BSBRA election, at which 71 of 84 eligible members voted.",
+    excerpt_bn: "২০২৬ সালের ৪ জুলাইয়ের বিএসবিআরএ নির্বাচন নিয়ে প্রতিবেদন, যেখানে ৮৪ জন যোগ্য সদস্যের ৭১ জন ভোট দেন।",
   }),
   post({
     slug: "coverage-new-president-elected",
     type: "media_coverage",
-    published_at: "2026-07-06T02:00:00.000Z",
+    published_at: "2026-07-05T03:00:00.000Z",
     source_name: "The Daily Observer",
     external_url: "https://observerbd.com/news/582040",
-    title_en: "Mohsin Chowdhury elected BSBRA president",
-    title_bn: "বিএসবিআরএ সভাপতি নির্বাচিত মোহসিন চৌধুরী",
-    excerpt_en: "Report on the results of the BSBRA Executive Committee election.",
+    title_en: "BSBRA gets new leadership, PHP's Mohsin elected president",
+    title_bn: "বিএসবিআরএ-তে নতুন নেতৃত্ব, সভাপতি পিএইচপির মহসিন",
+    excerpt_en: "Coverage of the results of the BSBRA Executive Committee election.",
     excerpt_bn: "বিএসবিআরএ কার্যনির্বাহী কমিটি নির্বাচনের ফলাফল নিয়ে প্রতিবেদন।",
   }),
   post({
-    slug: "health-camp-sitakunda",
-    type: "csr",
-    csr_area: "health",
-    published_at: "2026-05-14T06:00:00.000Z",
-    cover_image: "/art/lagoon.svg",
-    title_en: "Free health camp for workers' families in Sitakunda",
-    title_bn: "সীতাকুণ্ডে শ্রমিক পরিবারের জন্য বিনামূল্যে স্বাস্থ্য ক্যাম্প",
-    excerpt_en: "General check-ups, eye care and medicines for workers' families and neighbouring communities.",
-    excerpt_bn: "শ্রমিক পরিবার ও আশপাশের জনগোষ্ঠীর জন্য সাধারণ স্বাস্থ্য পরীক্ষা, চক্ষুসেবা ও ওষুধ।",
+    slug: "coverage-php-president",
+    type: "media_coverage",
+    published_at: "2026-07-04T12:56:00.000Z",
+    source_name: "Times of Bangladesh",
+    external_url: "https://tob.news/phps-mohsin-chowdhury-elected-bsbra-president/",
+    title_en: "PHP's Mohsin Chowdhury elected BSBRA president",
+    title_bn: "বিএসবিআরএ সভাপতি নির্বাচিত পিএইচপির মহসিন চৌধুরী",
+    excerpt_en: "The association's biennial election ended a period of legal complications, the report notes.",
+    excerpt_bn: "প্রতিবেদন অনুযায়ী দ্বিবার্ষিক নির্বাচনের মধ্য দিয়ে সংগঠনের দীর্ঘ আইনি জটিলতার অবসান হয়েছে।",
   }),
   post({
-    slug: "scholarships-workers-children",
-    type: "csr",
-    csr_area: "education",
-    published_at: "2026-02-08T06:00:00.000Z",
-    cover_image: "/art/sandbar.svg",
-    title_en: "Scholarships for workers' children",
-    title_bn: "শ্রমিকদের সন্তানদের জন্য বৃত্তি",
-    excerpt_en: "Member yards support secondary and higher-secondary education for the children of yard workers.",
-    excerpt_bn: "ইয়ার্ড শ্রমিকদের সন্তানদের মাধ্যমিক ও উচ্চমাধ্যমিক শিক্ষায় সহায়তা করছে সদস্য ইয়ার্ডগুলো।",
-  }),
-  post({
-    slug: "mangrove-planting",
-    type: "csr",
-    csr_area: "environment",
-    published_at: "2025-08-30T06:00:00.000Z",
-    cover_image: "/art/estuary.svg",
-    title_en: "Coastal tree-planting along the Sitakunda shore",
-    title_bn: "সীতাকুণ্ড উপকূলে বৃক্ষরোপণ",
-    excerpt_en: "Volunteers from member yards planted saplings to strengthen the coastal green belt.",
-    excerpt_bn: "উপকূলীয় সবুজ বেষ্টনী শক্তিশালী করতে সদস্য ইয়ার্ডগুলোর স্বেচ্ছাসেবকরা চারা রোপণ করেছেন।",
+    slug: "coverage-bsbra-election-today",
+    type: "media_coverage",
+    published_at: "2026-07-04T00:00:00.000Z",
+    source_name: "The Financial Express",
+    external_url: "https://today.thefinancialexpress.com.bd/trade-market/bsbra-election-today-1783097128",
+    title_en: "BSBRA election today",
+    title_bn: "আজ বিএসবিআরএ নির্বাচন",
+    excerpt_en: "Preview of the long-delayed BSBRA election in Chattogram.",
+    excerpt_bn: "চট্টগ্রামে দীর্ঘ প্রতীক্ষিত বিএসবিআরএ নির্বাচনের আগাম সংবাদ।",
   }),
 ];
 
@@ -658,6 +1133,56 @@ function doc(key: string, input: DocInput): DocumentRecord {
 const samplePdf = { file_name: "bsbra-sample.pdf", file_size: 1840, mime_type: "application/pdf" };
 
 export const documents: DocumentRecord[] = [
+  doc("imo-srf-list", {
+    title_en: "IMO List of Authorised Ship Recycling Facilities (SRF) — Bangladesh",
+    title_bn: "আইএমও অনুমোদিত জাহাজ পুনর্ব্যবহার স্থাপনার তালিকা (এসআরএফ) — বাংলাদেশ",
+    description_en:
+      "Official notification under Article 12.1 of the Hong Kong Convention listing all 17 authorised Bangladeshi ship recycling facilities with DASR certificate numbers, locations, and validity until 29 October 2030.",
+    description_bn:
+      "হংকং কনভেনশনের অনুচ্ছেদ ১২.১-এর আওতায় আইএমও-তে জমাকৃত বিজ্ঞপ্তি — যাতে ডিএএসআর সনদ নম্বর ও ২০৩০ পর্যন্ত বৈধতাসহ বাংলাদেশের ১৭টি অনুমোদিত ইয়ার্ডের বিবরণ রয়েছে।",
+    category: "law_regulation",
+    year: 2025,
+    published_on: "2025-11-21",
+    file_path: "imo-srf-list.pdf",
+    file_name: "LIST-OF-SRF-published-by-IMO-2025-1.pdf",
+    file_size: 315866,
+    mime_type: "application/pdf",
+    external_url: "https://bsrb.gov.bd/wp-content/uploads/2026/05/LIST-OF-SRF-published-by-IMO-2025-1.pdf",
+  }),
+  doc("bsrb-newsletter-2026", {
+    title_en: "Maritime Green Horizon Bangladesh — 2026 Edition (BSRB)",
+    title_bn: "মেরিটাইম গ্রিন হরাইজন বাংলাদেশ — ২০২৬ প্রকাশনা (বিএসআরবি)",
+    description_en:
+      "Official publication by the Bangladesh Ship Recycling Board on sustainable recycling milestones, HKC implementation, and green yard transformations.",
+    description_bn:
+      "টেকসই জাহাজ পুনর্ব্যবহার, এইচকেসি বাস্তবায়ন ও গ্রিন ইয়ার্ড রূপান্তর বিষয়ক বাংলাদেশ শিপ রিসাইক্লিং বোর্ডের অফিসিয়াল প্রকাশনা।",
+    category: "publication",
+    year: 2026,
+    published_on: "2026-07-05",
+    external_url: "https://bsrb.gov.bd/wp-content/uploads/2026/07/BSRB-NEWSLETTER-2026-Final.pdf",
+  }),
+  doc("bsrb-newsletter-2025", {
+    title_en: "Maritime Green Horizon Bangladesh — Inaugural Edition (BSRB)",
+    title_bn: "মেরিটাইম গ্রিন হরাইজন বাংলাদেশ — প্রথম প্রকাশনা (বিএসআরবি)",
+    description_en:
+      "Inaugural publication by the Bangladesh Ship Recycling Board reviewing safety protocols, training initiatives, and environmental monitoring.",
+    description_bn:
+      "নিরাপত্তা প্রটোকল, প্রশিক্ষণ উদ্যোগ ও পরিবেশগত তদারকি সংক্রান্ত বিএসআরবির প্রথম প্রকাশনা।",
+    category: "publication",
+    year: 2025,
+    published_on: "2025-09-01",
+    external_url: "https://bsrb.gov.bd/wp-content/uploads/2025/09/BSRB-Newsletter.pdf",
+  }),
+  doc("bsr-rules", {
+    title_en: "Bangladesh Ship Recycling Rules, 2023",
+    title_bn: "বাংলাদেশ জাহাজ পুনঃপ্রক্রিয়াজাতকরণ বিধিমালা, ২০২৩",
+    description_en:
+      "Statutory rules framed under the Bangladesh Ship Recycling Act 2018 governing yard authorization, safety audits, and waste operations.",
+    description_bn: "বাংলাদেশ শিপ রিসাইক্লিং আইন ২০১৮-এর অধীনে প্রণীত সংবিধিবদ্ধ বিধিমালা।",
+    category: "law_regulation",
+    year: 2023,
+    external_url: "https://bsrb.gov.bd",
+  }),
   doc("hkc", {
     title_en: "Hong Kong Convention — text and guidelines (IMO)",
     title_bn: "হংকং কনভেনশন — মূল পাঠ ও নির্দেশিকা (আইএমও)",
@@ -831,18 +1356,47 @@ interface AlbumSeed {
   slug: string;
   title_en: string;
   title_bn: string;
+  description_en: string;
+  description_bn: string;
   category: Album["category"];
-  date: string;
-  images: string[];
+  date: string | null;
+  images: PhotoKey[];
 }
 
+/** Photographs from Wikimedia Commons; each photo carries its licence credit. */
 const albumSeeds: AlbumSeed[] = [
-  { slug: "green-yards-2026", title_en: "Green yards of Sitakunda", title_bn: "সীতাকুণ্ডের গ্রিন ইয়ার্ড", category: "green_yards", date: "2026-09-12", images: ["estuary", "shoreline", "harbour", "tidal-flat"] },
-  { slug: "election-2026", title_en: "BSBRA election 2026", title_bn: "বিএসবিআরএ নির্বাচন ২০২৬", category: "events", date: "2026-07-04", images: ["meridian", "monsoon"] },
-  { slug: "safety-training", title_en: "Safety training", title_bn: "নিরাপত্তা প্রশিক্ষণ", category: "seminars", date: "2026-06-18", images: ["swell", "monsoon", "ridge"] },
-  { slug: "ship-recycling-operations", title_en: "Ship recycling operations", title_bn: "জাহাজ পুনর্ব্যবহার কার্যক্রম", category: "operations", date: "2026-05-02", images: ["current", "bathymetry", "dusk"] },
-  { slug: "international-cooperation", title_en: "International cooperation", title_bn: "আন্তর্জাতিক সহযোগিতা", category: "international", date: "2026-03-10", images: ["delta", "drift"] },
-  { slug: "community-programmes", title_en: "Community programmes", title_bn: "কমিউনিটি কর্মসূচি", category: "csr", date: "2026-05-14", images: ["lagoon", "sandbar"] },
+  {
+    slug: "ship-recycling-sitakunda",
+    title_en: "Ship recycling on the Sitakunda coast",
+    title_bn: "সীতাকুণ্ড উপকূলে জাহাজ পুনর্ব্যবহার",
+    description_en: "Vessels and yards along the coast north of Chattogram, from the tidal flats to modern concrete work floors.",
+    description_bn: "চট্টগ্রামের উত্তরের উপকূলজুড়ে জাহাজ ও ইয়ার্ড — জোয়ার-ভাটার চর থেকে আধুনিক কংক্রিটের কর্ম-মেঝে পর্যন্ত।",
+    category: "operations",
+    date: null,
+    images: ["bulkCarrier", "cranes", "imoGreenYard", "sunset", "beachedBow", "yard", "bowMonochrome", "coastAster"],
+  },
+  {
+    slug: "adviser-visit-ksrm-2025",
+    title_en: "Shipping and Labour Adviser at a Sitakunda yard",
+    title_bn: "সীতাকুণ্ডের ইয়ার্ডে নৌপরিবহন ও শ্রম উপদেষ্টা",
+    description_en: "The Adviser's visit to the KSRM ship recycling yard on 26 July 2025.",
+    description_bn: "২০২৫ সালের ২৬ জুলাই কেএসআরএম জাহাজ পুনর্ব্যবহার ইয়ার্ডে উপদেষ্টার পরিদর্শন।",
+    category: "yard_visits",
+    date: "2025-07-26",
+    images: ["ksrmVisit"],
+  },
+  {
+    slug: "bsrb-inspections-and-training",
+    title_en: "BSRB Yard Inspections & Training Initiatives",
+    title_bn: "বিএসআরবি ইয়ার্ড পরিদর্শন ও প্রশিক্ষণ উদ্যোগ",
+    description_en:
+      "On-site HKC verification visits, technical team inspections, and collaborative workforce training initiatives in Chattogram.",
+    description_bn:
+      "চট্টগ্রামে অন-সাইট এইচকেসি যাচাইকরণ সফর, কারিগরি দলের পরিদর্শন এবং যৌথ কর্মী প্রশিক্ষণ উদ্যোগ।",
+    category: "yard_visits",
+    date: "2026-07-28",
+    images: ["ziriSubedarInspection1", "ziriSubedarInspection2", "bsrbJicaTraining", "bsrbOffice", "smeExhibition"],
+  },
 ];
 
 export const albums: Album[] = albumSeeds.map((a, i) => ({
@@ -850,50 +1404,58 @@ export const albums: Album[] = albumSeeds.map((a, i) => ({
   slug: a.slug,
   title_en: a.title_en,
   title_bn: a.title_bn,
-  description_en: null,
-  description_bn: null,
+  description_en: a.description_en,
+  description_bn: a.description_bn,
   category: a.category,
   event_date: a.date,
-  cover_image: `/art/${a.images[0]}.svg`,
+  cover_image: PHOTOS[a.images[0]].src,
   sort_order: i + 1,
   is_published: true,
 }));
 
 export const photos: Photo[] = albumSeeds.flatMap((a) =>
-  a.images.map((image, i) => ({
-    ...meta(`photo:${a.slug}:${i}`),
-    album_id: uid(`album:${a.slug}`),
-    image_path: `/art/${image}.svg`,
-    video_url: null,
-    caption_en: `${a.title_en} — ${i + 1}`,
-    caption_bn: `${a.title_bn} — ${i + 1}`,
-    credit: "BSBRA",
-    width: 1600,
-    height: 1000,
-    allow_download: true,
-    sort_order: i + 1,
-  })),
+  a.images.map((key, i) => {
+    const photo = PHOTOS[key];
+    return {
+      ...meta(`photo:${a.slug}:${i}`),
+      album_id: uid(`album:${a.slug}`),
+      image_path: photo.src,
+      video_url: null,
+      caption_en: photo.alt_en,
+      caption_bn: photo.alt_bn,
+      credit: `${photo.author} · ${photo.license}`,
+      width: photo.width,
+      height: photo.height,
+      allow_download: true,
+      sort_order: i + 1,
+    };
+  }),
 );
 
 // ---------------------------------------------------------------------------
 // Member registry
 // ---------------------------------------------------------------------------
-export const members: Member[] = yards.map((y, i) => ({
-  ...meta(`member:${y.slug}`),
-  membership_no: `BSBRA-${String(101 + i).padStart(4, "0")}`,
-  company_name: y.owner_company ?? y.name_en,
-  company_name_bn: null,
-  yard_id: y.id,
-  representative_name: null,
-  representative_designation: "Managing Director",
-  phone: null,
-  email: null,
-  address: "Sitakunda, Chattogram",
-  website: null,
-  status: y.status === "conventional" ? "applicant" : "active",
-  joined_on: `20${String(5 + i).padStart(2, "0")}-01-15`,
-  notes: null,
-}));
+export const members: Member[] = yards.map((y, i) => {
+  const parts = y.contact_person ? y.contact_person.split(",") : [];
+  const repName = parts[0]?.trim() ?? null;
+  const repDesig = parts[1]?.trim() ?? "Authorized Representative";
+  return {
+    ...meta(`member:${y.slug}`),
+    membership_no: `BSBRA-M${String(i + 1).padStart(3, "0")}`,
+    company_name: y.name_en,
+    company_name_bn: y.name_bn,
+    yard_id: y.id,
+    representative_name: repName,
+    representative_designation: repDesig,
+    phone: y.phone,
+    email: y.email,
+    address: y.address_en ?? "Sitakunda, Chattogram, Bangladesh",
+    website: y.website,
+    status: "active",
+    joined_on: "2020-01-01",
+    notes: `IMO-authorised facility under Hong Kong Convention (DASR: ${y.certificate_no})`,
+  };
+});
 
 // ---------------------------------------------------------------------------
 // Tide tables — synthesised from M2/S2/K1/O1 constituents for the preview.
@@ -1018,7 +1580,7 @@ export const auditLog: AuditEntry[] = (() => {
     { occurred_at: "2026-10-08T07:45:00.000Z", actor_id: actor.id, actor_email: actor.email, actor_role: actor.role, action: "insert", table_name: "documents", record_id: documents[8].id, record_label: documents[8].title_en, changed_fields: null, old_data: null, new_data: null },
     { occurred_at: "2026-10-07T13:30:00.000Z", actor_id: admin.id, actor_email: admin.email, actor_role: admin.role, action: "update", table_name: "meeting_minutes", record_id: meetingMinutes[0].id, record_label: meetingMinutes[0].title_en, changed_fields: ["status"], old_data: { status: "draft" }, new_data: { status: "approved" } },
     { occurred_at: "2026-10-07T09:02:00.000Z", actor_id: admin.id, actor_email: admin.email, actor_role: admin.role, action: "sign_in", table_name: "activity", record_id: null, record_label: null, changed_fields: null, old_data: null, new_data: {} },
-    { occurred_at: "2026-10-06T16:18:00.000Z", actor_id: dataOfficer.id, actor_email: dataOfficer.email, actor_role: dataOfficer.role, action: "update", table_name: "industry_statistics", record_id: industryStatistics[9].id, record_label: "Year 2025", changed_fields: ["green_yards", "total_ldt"], old_data: null, new_data: null },
+    { occurred_at: "2026-10-06T16:18:00.000Z", actor_id: dataOfficer.id, actor_email: dataOfficer.email, actor_role: dataOfficer.role, action: "update", table_name: "industry_statistics", record_id: industryStatistics[industryStatistics.length - 1].id, record_label: "Year 2025", changed_fields: ["green_yards", "global_share_percent"], old_data: null, new_data: null },
     { occurred_at: "2026-10-05T10:11:00.000Z", actor_id: actor.id, actor_email: actor.email, actor_role: actor.role, action: "delete", table_name: "links", record_id: uid("link:obsolete"), record_label: "Obsolete link", changed_fields: null, old_data: null, new_data: null },
     { occurred_at: "2026-10-04T08:40:00.000Z", actor_id: admin.id, actor_email: admin.email, actor_role: admin.role, action: "export", table_name: "activity", record_id: "audit_log", record_label: "audit_log", changed_fields: null, old_data: null, new_data: { format: "csv" } },
   ];

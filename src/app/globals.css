@@ -168,8 +168,8 @@
   --shadow-soft: var(--shadow-md);
   --shadow-float: var(--shadow-lg);
 
-  --ease-apple: cubic-bezier(0.28, 0.11, 0.32, 1);
-  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.16, 1, 0.3, 1);
 
   --radius-card: 1.25rem;
   --radius-tile: 1.75rem;
@@ -216,6 +216,7 @@
   }
 
   body {
+    overflow-x: clip;
     background: var(--bg);
     color: var(--fg);
     font-family: var(--font-sans);
@@ -412,6 +413,96 @@
 
 @utility mask-fade-x {
   mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+}
+
+/* ==========================================================================
+   Site-wide reveal
+   Every outermost content block in <main> and the footer enters the same way:
+   blurred, slightly smaller and transparent → sharp, full size and opaque.
+   This is the first-paint entrance; RevealController replays it whenever a
+   block scrolls back into view. Keep the selector in step with
+   REVEAL_SELECTOR in src/components/motion/reveal-controller.tsx.
+   ========================================================================== */
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    filter: blur(16px);
+    transform: translate3d(0, 44px, 0) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* Artwork has its own filter in dark mode, so it enters without blur. */
+@keyframes reveal-in-soft {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 44px, 0) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :where(main, footer)
+    :is([data-reveal], article, li, figure, blockquote, form, table, dl, pre, .hairline, .art-frame, h1, h2, h3, h4, h5, h6, p, img, video, hr, svg[role="img"], .press):not(:is([data-reveal], article, li, figure, blockquote, form, table, dl, pre, .hairline, .art-frame, h1, h2, h3, h4, h5, h6, p, img, video, hr, svg[role="img"], .press) *):not(:is(header, nav, [role="dialog"], [data-no-reveal]) *):not(:is(header, nav, [role="dialog"], [data-no-reveal])) {
+    animation: reveal-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0s) backwards;
+  }
+  :where(main, footer) img[src*="/art/"]:not(:is([data-reveal], article, li, figure, blockquote, form, table, dl, pre, .hairline, .art-frame, h1, h2, h3, h4, h5, h6, p, img, video, hr, svg[role="img"], .press) *):not(:is(header, nav, [role="dialog"], [data-no-reveal]) *) {
+    animation-name: reveal-in-soft;
+  }
+}
+
+/* Photographs settle from a slight zoom as they scroll into view — driven by
+   the scroll timeline on the compositor, so it costs no JavaScript. */
+@keyframes photo-settle {
+  from {
+    transform: scale(1.16);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* Page-to-page navigation: the old page lifts away softly, the new one
+   fades in while its blocks play their own entrance. */
+@keyframes page-out {
+  to {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translate3d(0, -16px, 0) scale(0.985);
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .photo-zoom {
+      animation: photo-settle linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 55%;
+    }
+  }
+  ::view-transition-old(.page) {
+    animation: page-out 280ms cubic-bezier(0.4, 0, 1, 1) both;
+  }
+  ::view-transition-new(.page) {
+    animation: page-in 420ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+  }
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
 }
 
 /* ==========================================================================

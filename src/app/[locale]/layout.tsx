@@ -1,6 +1,6 @@
 import "../globals.css";
 import type { Metadata, Viewport } from "next";
-import { Suspense } from "react";
+import { Suspense, ViewTransition } from "react";
 import { notFound } from "next/navigation";
 import { Toaster } from "sonner";
 import { getDictionary, href, isLocale, locales, type Locale } from "@/lib/i18n";
@@ -13,6 +13,7 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { HeaderAccount, SignInIcon } from "@/components/site/header-account";
 import { Analytics } from "@/components/site/analytics";
 import { ThemeScript } from "@/components/theme/theme-script";
+import { RevealController } from "@/components/motion/reveal-controller";
 import { fontVariables } from "../fonts";
 
 export function generateStaticParams() {
@@ -50,10 +51,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   return (
     // data-theme is set before paint by ThemeScript when the visitor chose dark.
     <html lang={locale} className={fontVariables} suppressHydrationWarning>
-      <head>
-        <ThemeScript />
-      </head>
       <body className="min-h-dvh">
+        <ThemeScript />
         <MotionProvider>
           <SiteHeader
             locale={locale}
@@ -90,14 +89,14 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
               </Suspense>
             }
           />
-          <main id="main">{children}</main>
+          <main id="main">
+            <ViewTransition default="page">{children}</ViewTransition>
+          </main>
           <SiteFooter locale={locale} t={t} groups={groups} settings={settings} />
         </MotionProvider>
         <Toaster position="bottom-center" toastOptions={{ className: "!rounded-2xl" }} />
         <Analytics />
-        <noscript>
-          <style>{"[data-reveal]{opacity:1!important;transform:none!important}"}</style>
-        </noscript>
+        <RevealController />
       </body>
     </html>
   );

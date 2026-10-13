@@ -9,13 +9,15 @@ import { pageMetadata } from "@/lib/seo";
 import { getYardSummaries, getYards } from "@/lib/data/public";
 import type { YardStatus } from "@/lib/types";
 import { yardStatusTone } from "@/lib/tones";
+import { PHOTOS } from "@/lib/media/photos";
+import { PhotoFigure } from "@/components/ui/photo-figure";
 import { PageHero } from "@/components/site/page-hero";
 import { Container } from "@/components/ui/container";
 import { FilterPills } from "@/components/ui/filter-pills";
 import { Badge } from "@/components/ui/badge";
 import { AppImage } from "@/components/ui/app-image";
 import { EmptyState } from "@/components/ui/empty-state";
-import { RevealGroup, RevealItem } from "@/components/motion/reveal";
+import { Reveal, RevealGroup, RevealItem } from "@/components/motion/reveal";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/yards">): Promise<Metadata> {
   const locale = await resolveLocale(params);
@@ -30,12 +32,29 @@ export default async function YardsPage({ params, searchParams }: PageProps<"/[l
   const t = getDictionary(locale);
   return (
     <>
-      <PageHero eyebrow={t.yards.eyebrow} title={t.yards.title} lede={t.yards.lede} />
+      <PageHero eyebrow={t.yards.eyebrow} title={t.yards.title} lede={t.yards.lede}>
+        <PhotoFigure photo={PHOTOS.imoGreenYard} locale={locale} aspect="aspect-[4/3] sm:aspect-[21/9]" priority />
+      </PageHero>
       <Container className="pb-24">
         <Suspense fallback={<div className="skeleton h-[520px] rounded-[var(--radius-tile)]" />}>
           <YardGrid locale={locale} t={t} searchParams={searchParams} />
         </Suspense>
       </Container>
+      <div className="bg-bg-subtle">
+        <Container className="grid items-center gap-12 py-20 sm:py-28 lg:grid-cols-[5fr_6fr] lg:gap-20">
+          <PhotoFigure
+            photo={PHOTOS.coastAster}
+            locale={locale}
+            aspect="aspect-[687/798]"
+            sizes="(min-width: 1024px) 40vw, 100vw"
+            className="mx-auto w-full max-w-md"
+          />
+          <Reveal>
+            <h2 className="text-headline text-balance">{t.yards.coastTitle}</h2>
+            <p className="text-lede mt-6 text-pretty text-fg-subtle">{t.yards.coastBody}</p>
+          </Reveal>
+        </Container>
+      </div>
     </>
   );
 }
@@ -80,7 +99,7 @@ async function YardGrid({
               <RevealItem key={yard.id}>
                 <Link
                   href={href(locale, `/yards/${yard.slug}`)}
-                  className="group block overflow-hidden rounded-[var(--radius-tile)] bg-surface hairline transition-shadow duration-500 hover:shadow-[var(--shadow-md)]"
+                  className="group block overflow-hidden rounded-[var(--radius-tile)] bg-surface hairline transition-[transform,box-shadow] duration-500 ease-[var(--ease-out-quint)] hover:-translate-y-1.5 hover:shadow-[var(--shadow-md)]"
                 >
                   <div className="relative aspect-[16/10] overflow-hidden bg-bg-muted">
                     <AppImage
@@ -116,7 +135,7 @@ async function YardGrid({
                       </div>
                       <div>
                         <dt className="text-fg-subtle">{t.yards.vesselsRecycled}</dt>
-                        <dd className="mt-0.5 font-medium text-fg tabular">{formatNumber(locale, s?.vessels ?? 0)}</dd>
+                        <dd className="mt-0.5 font-medium text-fg tabular">{s?.vessels ? formatNumber(locale, s.vessels) : "—"}</dd>
                       </div>
                     </dl>
                   </div>

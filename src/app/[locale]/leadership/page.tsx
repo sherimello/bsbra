@@ -21,6 +21,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/leadersh
 }
 
 function Portrait({ name, photo, large }: { name: string; photo: string | null; large?: boolean }) {
+  const url = mediaUrl(photo);
   return (
     <div
       className={
@@ -29,12 +30,17 @@ function Portrait({ name, photo, large }: { name: string; photo: string | null; 
           : "relative aspect-square overflow-hidden rounded-[var(--radius-card)] bg-bg-subtle hairline"
       }
     >
-      {mediaUrl(photo) ? (
-        <AppImage src={photo} alt={name} sizes="(min-width: 1024px) 25vw, 50vw" />
+      {url ? (
+        <AppImage src={url} alt={name} sizes="(min-width: 1024px) 25vw, 50vw" />
       ) : (
-        <span className="absolute inset-0 grid place-items-center text-[clamp(2rem,5vw,3.5rem)] font-medium tracking-[-0.03em] text-fg-faint">
-          {initials(name)}
-        </span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-bg-subtle to-bg-muted p-4 text-center select-none">
+          <span className="grid size-14 place-items-center rounded-full bg-surface text-base font-semibold tracking-tight text-fg-muted shadow-xs hairline">
+            {initials(name)}
+          </span>
+          <span className="mt-2 text-[0.6875rem] font-semibold text-fg-faint uppercase tracking-widest">
+            Executive
+          </span>
+        </div>
       )}
     </div>
   );
@@ -49,19 +55,35 @@ export default async function LeadershipPage({ params }: PageProps<"/[locale]/le
 
   const groups: { key: CommitteeMember["category"]; title: string }[] = [
     { key: "office_bearer", title: l.officeBearers },
-    { key: "member", title: l.members },
     { key: "advisor", title: l.advisors },
+    { key: "member", title: l.members },
   ];
 
   return (
     <>
       <PageHero eyebrow={l.eyebrow} title={l.title} lede={l.lede} />
 
-      <Section className="pt-4 sm:pt-8">
-        <SectionHeading
-          eyebrow={term ? `${l.term} ${localizeDigits(locale, term)}` : undefined}
-          title={l.current}
-        />
+      <Section className="pt-4 sm:pt-6">
+        <div className="relative aspect-[16/9] sm:aspect-[21/9] overflow-hidden rounded-[var(--radius-tile)] bg-bg-subtle hairline">
+          <AppImage
+            src="/photos/bsbra-agm-committee.jpg"
+            alt={locale === "bn" ? "বিএসবিআরএ বার্ষিক সাধারণ সভা ও কার্যনির্বাহী পরিষদ" : "BSBRA Executive Committee and Annual General Meeting in session"}
+            priority
+            sizes="(min-width: 1200px) 1180px, 100vw"
+          />
+        </div>
+        <p className="mt-2.5 text-right text-[0.8125rem] text-fg-subtle">
+          {locale === "bn"
+            ? "রেডিসন ব্লু চট্টগ্রাম বে ভিউ-তে বিএসবিআরএ ৪০তম বার্ষিক সাধারণ সভা ও কার্যনির্বাহী কমিটির নেতৃবৃন্দ"
+            : "BSBRA Executive Committee and members presiding at the 40th Annual General Meeting in Chattogram"}
+        </p>
+
+        <div className="mt-12 sm:mt-16">
+          <SectionHeading
+            eyebrow={term ? `${l.term} ${localizeDigits(locale, term)}` : undefined}
+            title={l.current}
+          />
+        </div>
         {groups.map(({ key, title }) => {
           const people = committee.filter((m) => m.category === key);
           if (!people.length) return null;

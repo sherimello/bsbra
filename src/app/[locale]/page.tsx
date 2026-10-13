@@ -7,6 +7,8 @@ import { formatCompact, localizeDigits } from "@/lib/i18n/format";
 import { mediaUrl } from "@/lib/env";
 import { pageMetadata } from "@/lib/seo";
 import { POST_GROUPS, getIndustryStatistics, getLatestPosts, getSiteSettings, getYards } from "@/lib/data/public";
+import { getCoastConditions } from "@/lib/data/coast";
+import { PHOTOS } from "@/lib/media/photos";
 import { Container } from "@/components/ui/container";
 import { Section, SectionHeading } from "@/components/ui/section";
 import { ArrowLink, ButtonLink } from "@/components/ui/button";
@@ -16,6 +18,8 @@ import { HomeHero } from "@/components/home/home-hero";
 import { ScrollStatement } from "@/components/home/scroll-statement";
 import { YardShowcase } from "@/components/home/yard-showcase";
 import { PostCard } from "@/components/site/post-card";
+import { PhotoCreditLink, PhotoFigure } from "@/components/ui/photo-figure";
+import { CoastNote, CoastStrip } from "@/components/coast/coast";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]">): Promise<Metadata> {
   const { locale } = await params;
@@ -33,14 +37,28 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const t = getDictionary(locale);
   const h = t.home;
 
-  const [settings, stats, yards, news] = await Promise.all([
+  const [settings, stats, yards, news, coast] = await Promise.all([
     getSiteSettings(),
     getIndustryStatistics(),
     getYards(["green", "progressive"]),
     getLatestPosts(POST_GROUPS.newsroom, 3),
+    getCoastConditions(),
   ]);
   const latest = stats.at(-1);
   const totalVessels = stats.reduce((sum, s) => sum + (s.vessels_recycled ?? 0), 0);
+  const peak = stats.reduce<(typeof stats)[number] | null>(
+    (best, s) => ((s.vessels_recycled ?? 0) > (best?.vessels_recycled ?? -1) ? s : best),
+    null,
+  );
+  const listedYards = yards.filter((y) => y.hkc_compliant).length;
+  const headline = latest
+    ? [
+        { label: `${h.statVessels} · ${localizeDigits(locale, latest.year)}`, value: latest.vessels_recycled, suffix: "", digits: 0 },
+        { label: h.statShare, value: latest.global_share_percent, suffix: "%", digits: 1 },
+        { label: h.statListed, value: listedYards || null, suffix: "", digits: 0 },
+        { label: `${h.statPeak} · ${localizeDigits(locale, peak?.year ?? "")}`, value: peak?.vessels_recycled ?? null, suffix: "", digits: 0 },
+      ].filter((s): s is { label: string; value: number; suffix: string; digits: number } => s.value != null)
+    : [];
 
   const explore = [
     { title: t.nav.statistics, body: t.nav.statisticsDesc, href: "/industry" },
@@ -77,9 +95,17 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         lede={h.heroLede}
         primary={{ label: h.heroPrimary, href: href(locale, "/industry") }}
         secondary={{ label: h.heroSecondary, href: href(locale, "/yards") }}
-        art="/art/bathymetry.svg"
-        caption={{ place: h.heroPlace, coords: "22°26′ N · 91°43′ E" }}
+        image={{ src: PHOTOS.bulkCarrier.src, alt: locale === "bn" ? PHOTOS.bulkCarrier.alt_bn : PHOTOS.bulkCarrier.alt_en }}
+        caption={{ place: h.heroPlace }}
+        credit={<PhotoCreditLink photo={PHOTOS.bulkCarrier} locale={locale} onImage />}
       />
+
+      {coast && (
+        <Container className="pt-10 pb-4 sm:pt-12">
+          <CoastStrip data={coast} locale={locale} c={t.coast} href={`${href(locale, "/tides")}#forecast`} />
+          <CoastNote c={t.coast} className="mt-3" />
+        </Container>
+      )}
 
       {/* Why it matters — a statement that lights up as it scrolls by */}
       <Section>
@@ -99,6 +125,13 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             </RevealItem>
           ))}
         </RevealGroup>
+        <PhotoFigure
+          photo={PHOTOS.sunset}
+          locale={locale}
+          aspect="aspect-[4/3] sm:aspect-[21/9]"
+          sizes="100vw"
+          className="mt-20 ml-[calc(50%-50vw)] w-screen rounded-none sm:mt-28"
+        />
       </Section>
 
       {/* At a glance */}
@@ -111,23 +144,18 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             action={<ArrowLink href={href(locale, "/industry")}>{t.common.learnMore}</ArrowLink>}
           />
           <RevealGroup className="grid grid-cols-2 gap-x-8 gap-y-12 lg:grid-cols-4">
-            {[
-              { label: h.statVessels, value: latest.vessels_recycled ?? 0, compact: false },
-              { label: h.statLdt, value: latest.total_ldt ?? 0, compact: true },
-              { label: h.statYards, value: latest.active_yards ?? 0, compact: false },
-              { label: h.statGreen, value: latest.green_yards ?? 0, compact: false },
-            ].map((s) => (
+            {headline.map((s) => (
               <RevealItem key={s.label} className="border-t border-line-strong pt-6">
                 <p className="text-[clamp(2.75rem,5.4vw,4.75rem)] leading-none font-semibold tracking-[-0.04em] tabular text-fg">
-                  <CountUp value={s.value} locale={locale} compact={s.compact} />
+                  <CountUp value={s.value} locale={locale} suffix={s.suffix} maximumFractionDigits={s.digits} />
                 </p>
                 <p className="mt-4 text-[0.9375rem] text-fg-subtle">{s.label}</p>
               </RevealItem>
             ))}
           </RevealGroup>
           <Reveal className="mt-14 text-[0.8125rem] text-fg-faint">
-            {h.statsYearNote} {localizeDigits(locale, latest.year)} · {formatCompact(locale, totalVessels)}{" "}
-            {t.industry.vessels}, {localizeDigits(locale, stats[0]?.year ?? "")}–{localizeDigits(locale, latest.year)}
+            {formatCompact(locale, totalVessels)} {t.industry.vessels}, {localizeDigits(locale, stats[0]?.year ?? "")}–
+            {localizeDigits(locale, latest.year)} · {h.statsSource}
           </Reveal>
         </Section>
       )}

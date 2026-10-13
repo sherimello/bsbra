@@ -6,7 +6,7 @@ import { getAlbums, getLatestPosts, getYards, POST_GROUPS } from "@/lib/data/pub
 const STATIC_PATHS = [
   "", "/about", "/leadership", "/industry", "/vessels", "/yards", "/tides", "/compliance",
   "/compliance/our-compliances", "/waste-management", "/safety", "/labour", "/csr", "/news",
-  "/press", "/international", "/publications", "/gallery", "/links", "/contact", "/privacy", "/terms",
+  "/press", "/international", "/publications", "/gallery", "/links", "/contact", "/privacy", "/terms", "/credits",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

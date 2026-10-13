@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/lib/env";
@@ -7,9 +8,14 @@ import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/lib/env";
 /**
  * Request-scoped client bound to the visitor's auth cookies. Queries run as
  * the signed-in user, so Row Level Security applies their role.
+ *
+ * `connection()` marks everything after it as request-time work: the auth
+ * client reads the clock (`Date.now()`) to check token expiry, which Cache
+ * Components does not allow while prerendering.
  */
 export async function createServerSupabase(): Promise<SupabaseClient> {
   const cookieStore = await cookies();
+  await connection();
   return createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     cookies: {
       getAll() {

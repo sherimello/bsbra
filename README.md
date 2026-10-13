@@ -38,7 +38,15 @@ Open http://localhost:3000. Without Supabase keys the platform runs in **preview
 - All writes are disabled (forms validate, then explain that Supabase isn't connected).
 - A "Preview build · sample content" badge appears in the footer and `robots.txt` blocks indexing.
 
-> **The sample yards, vessels, statistics and tides are illustrative.** Yard names are fictional, IMO-format numbers use the unused `1xxxxxx` range, and tide tables are synthesised. Replace them with official BSBRA records before launch.
+> **Content.** The starting content is drawn from public sources (checked October 2026) and cited on the site's Credits page:
+> - the 17 yards on the IMO list (The Business Standard, 18 May 2026);
+> - ships recycled per year, 2018–2025 (NGO Shipbreaking Platform, via The Daily Star and The Financial Express);
+> - the 2026–2028 Executive Committee (The Daily Star and Times of Bangladesh);
+> - real news and press coverage;
+> - laws and conventions;
+> - CC-licensed photographs from Wikimedia Commons.
+>
+> Only the **vessels**, **members-only documents and minutes**, and the **monthly tide tables** in preview mode are illustrative. Vessel names are fictional, IMO-format numbers use the unused `1xxxxxx` range, vessels aren't linked to any yard, and the tide tables are synthesised. These live only in `02_demo_data.sql`, never in the starting content. The live tide *forecast* is real (see §6).
 
 ---
 
@@ -62,7 +70,7 @@ It contains all six migrations plus the starting content, and every statement is
 | `…000500_storage.sql` | `media` (public), `documents` and `minutes` (private) buckets and their policies |
 | `…000600_search_reports.sql` | Global bilingual search function and reporting views |
 
-**Optional — demo data for staging:** run [`supabase/seed/02_demo_data.sql`](supabase/seed/02_demo_data.sql) the same way. Do not run it in production.
+**Optional — demo data for staging:** run [`supabase/seed/02_demo_data.sql`](supabase/seed/02_demo_data.sql) the same way. It adds sample vessels, synthesised tide tables, a member registry and sample minutes. Do not run it in production.
 
 Prefer the CLI? `npx supabase link --project-ref jbondogatgxkwqgtzell`, then `npx supabase db push` (migrations) and `npx supabase config push` (auth settings and e-mail templates from [`supabase/config.toml`](supabase/config.toml)).
 
@@ -194,6 +202,23 @@ src/assets/fonts/        Google Sans Flex (source TTF + the Latin woff2 subset t
 public/art/              Generated bathymetric artwork (placeholders until photos are uploaded)
 ```
 
+**Live coast data.** `src/lib/data/coast.ts` calls Open-Meteo's marine and weather APIs for the Sitakunda coast. It needs no key, and the data is CC BY 4.0.
+- Results are cached for 15 minutes and shared by all visitors.
+- High and low tides are found from the hourly sea-level curve, refined to the minute with a parabola fit.
+- Where it appears:
+  - the live strip under the home hero;
+  - the tide forecast (curve plus 7-day table) on `/tides`.
+- If the service is down, the panels are hidden.
+- It is a model relative to mean sea level, so the official monthly tables (Admin → Import tides) remain the reference for beaching.
+
+**Scroll reveal.** Every outermost content block in `<main>` and the footer enters the same way: from blurred, 96.5% size and transparent to sharp, full size and opaque.
+- A pure-CSS entrance covers the first paint. It needs no JavaScript and never flashes.
+- `RevealController` replays the entrance each time a block scrolls back into view, staggered when several arrive together. It resets blocks only while they are off-screen.
+- It uses the Web Animations API, so React's markup is never changed.
+- Keep the selector in `globals.css` in step with `REVEAL_SELECTOR`.
+- Mark a region `data-no-reveal` to opt it out.
+- Reduced-motion users get no animation.
+
 **Design system.** Tokens live in `src/app/globals.css`: light by default, with `html[data-theme="dark"]` as an opt-in appearance chosen from the header (remembered per browser; an inline script applies it before first paint, so there is no flash). "Brand" is the action colour — ink on light, paper on dark — and links use one blue. Google Sans Flex is loaded through `next/font/local` from a Latin subset that keeps the weight and optical-size axes variable; Bangla falls through to Noto Sans Bengali. To rebuild the subset after replacing the TTF, instance it at `GRAD=0 ROND=0 slnt=0 wdth=100` and subset to Latin with fontTools (`pip install fonttools brotli`).
 
 **Rendering.** Public data functions use `"use cache"` with a cache tag per table and run as an anonymous visitor (RLS applies), so pages are prerendered into a static shell and served instantly from the CDN; admin saves call `updateTag()` to refresh exactly what changed. Search, filters and anything user-specific stream in behind `<Suspense>`. The portal and admin render per request.
@@ -208,7 +233,7 @@ public/art/              Generated bathymetric artwork (placeholders until photo
 | `npm run build` / `npm start` | Production build / server |
 | `npm run lint` / `npm run typecheck` | ESLint / TypeScript |
 | `npm run seed:generate` | Regenerate `supabase/seed/*.sql` from `src/lib/demo` |
-| `npm run art` | Regenerate the contour artwork used by the sample content |
+| `npm run art` | Regenerate the contour artwork (placeholders for yards and posts without photos) |
 | `npm run db:setup-sql` | Rebuild `supabase/setup.sql` from the migrations and starting content |
 | `npm run db:test` | Database test suite (setup, seeds, RLS, storage, audit) on in-process Postgres |
 | `npm run db:verify` | Check the live Supabase project with the public key |
@@ -253,7 +278,14 @@ public/art/              Generated bathymetric artwork (placeholders until photo
 
 ## 8. Before launch checklist
 
-- [ ] Replace demo data (do not run `02_demo_data.sql` in production); enter official yards, vessels, statistics and tides.
+- [ ] Do not run `02_demo_data.sql` in production. Enter vessel records and the official monthly tide tables (Admin → Import tides).
+- [ ] Review the starting content against BSBRA's own records:
+  - yard details, logos and coordinates;
+  - official statistics (tonnage, active yards, workers);
+  - committee spellings and portraits;
+  - the office address (taken from the Bangladesh Employers' Federation listing).
+- [ ] Replace the Wikimedia Commons photographs with BSBRA's own over time (`src/lib/media/photos.ts`, Admin → uploads), keeping the Credits page in step.
+- [ ] Open-Meteo's free API is for non-commercial use. If BSBRA's use counts as commercial, take an Open-Meteo API plan.
 - [ ] **Site settings:** address, phone, e-mail, office hours, map location, media contact, social links.
 - [ ] **BSRB link:** set the Bangladesh Ship Recycling Board's official website (preview uses the Ministry of Industries site).
 - [ ] Review and approve all page copy (About, compliance, waste, safety, labour, privacy, terms) in both languages.

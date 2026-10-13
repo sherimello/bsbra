@@ -68,7 +68,7 @@ async function AlbumGrid({ locale, t, searchParams }: { locale: Locale; t: Dicti
                 alt=""
                 seed={album.slug}
                 sizes={i === 0 ? "(min-width: 1024px) 66vw, 100vw" : "(min-width: 1024px) 33vw, 100vw"}
-                className="transition-transform duration-[1.4s] ease-[var(--ease-out-quint)] group-hover:scale-105"
+                className="transition-transform duration-700 ease-[var(--ease-out-quint)] group-hover:scale-105"
               />
               </div>
               <div className="px-1 pt-4">
@@ -78,7 +78,7 @@ async function AlbumGrid({ locale, t, searchParams }: { locale: Locale; t: Dicti
                 </p>
                 <h2 className="mt-1 text-[1.375rem] leading-tight font-semibold tracking-[-0.022em] text-fg">{tr(album, "title", locale)}</h2>
                 <p className="mt-1 text-[0.8125rem] text-fg-faint tabular">
-                  {formatNumber(locale, album.photo_count)} {t.gallery.photos}
+                  {formatNumber(locale, album.photo_count)} {album.photo_count === 1 ? t.gallery.photo : t.gallery.photos}
                 </p>
               </div>
             </Link>

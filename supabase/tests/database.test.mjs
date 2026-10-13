@@ -118,7 +118,7 @@ const as = async (who, fn) => {
 // ---------------------------------------------------------------- Anonymous visitor
 await as("anon", async () => {
   const publishedPosts = await count("select count(*) n from public.posts");
-  ok("anon sees published public posts", publishedPosts === 14, `${publishedPosts}`);
+  ok("anon sees published public posts", publishedPosts === 12, `${publishedPosts}`);
   ok("anon sees only public documents", (await count("select count(*) n from public.documents where access_level <> 'public'")) === 0);
   ok("anon cannot read minutes", (await count("select count(*) n from public.meeting_minutes")) === 0);
   ok("anon cannot read members", (await count("select count(*) n from public.members")) === 0);
@@ -209,7 +209,7 @@ await as("member", async () => {
   ok("member can update own contact details", own.affectedRows === 1);
   ok("member sees members-level minutes", (await count("select count(*) n from public.meeting_minutes")) >= 1);
   ok("member does not see internal minutes", (await count("select count(*) n from public.meeting_minutes where access_level = 'internal'")) === 0);
-  ok("member reads the member registry", (await count("select count(*) n from public.members")) === 8);
+  ok("member reads the member registry", (await count("select count(*) n from public.members")) === 17);
   ok("member cannot read others' profiles", (await count("select count(*) n from public.profiles")) === 1);
   ok("member can read approved minutes file", (await count("select count(*) n from storage.objects where bucket_id = 'minutes'")) === 0, "no object yet");
   await expectError("member cannot upload to media", () =>

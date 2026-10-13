@@ -47,23 +47,34 @@ export function AppImage({
   }
 
   return fill ? (
-    <Image src={url} alt={alt} fill sizes={sizes} priority={priority} className={cn("object-cover", className)} />
+    <Image src={url} alt={alt} fill sizes={sizes} loading={priority ? "eager" : undefined} fetchPriority={priority ? "high" : undefined} className={cn("object-cover", className)} />
   ) : (
-    <Image src={url} alt={alt} width={width ?? 1600} height={height ?? 1000} sizes={sizes} priority={priority} className={cn("object-cover", className)} />
+    <Image src={url} alt={alt} width={width ?? 1600} height={height ?? 1000} sizes={sizes} loading={priority ? "eager" : undefined} fetchPriority={priority ? "high" : undefined} className={cn("object-cover", className)} />
   );
 }
 
-/** Light artwork from public/art, used wherever an image hasn't been uploaded yet. */
-const placeholderArt = ["tidal-flat", "meridian", "shoreline", "harbour", "estuary", "monsoon", "sandbar", "lagoon", "ridge", "swell"];
+/** Fallback authentic photography from public/photos used when an image hasn't been uploaded yet. */
+const placeholderPhotos = [
+  "/photos/imo-green-yard.jpg",
+  "/photos/bulk-carrier-recycling.jpg",
+  "/photos/ksrm-yard-visit-2025.jpg",
+  "/photos/sitakunda-cranes.jpg",
+  "/photos/chattogram-yard.jpg",
+  "/photos/bhatiary-gas-cutting.jpg",
+  "/photos/imo-green-recycling-sustainable.jpg",
+  "/photos/chittagong-demolition-yard.jpg",
+  "/photos/ziri-subedar-inspection-1.jpg",
+  "/photos/beached-bow.jpg",
+];
 
 export function ImagePlaceholder({ seed = "", className }: { seed?: string; className?: string }) {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
-  const art = placeholderArt[hash % placeholderArt.length];
+  const photo = placeholderPhotos[hash % placeholderPhotos.length];
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`/art/${art}.svg`}
+      src={photo}
       alt=""
       aria-hidden
       loading="lazy"

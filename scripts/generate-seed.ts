@@ -1,10 +1,12 @@
 /**
  * Generates SQL seed files from the bundled sample content (src/lib/demo):
  *
- *   supabase/seed/01_content.sql    Site settings, CMS pages, laws & conventions, links.
- *                                   Recommended starting content — review and edit in the admin.
- *   supabase/seed/02_demo_data.sql  ILLUSTRATIVE yards, vessels, statistics, tides, news,
- *                                   gallery, members and leadership. For demos/staging only.
+ *   supabase/seed/01_content.sql    Starting content, verified from public sources: site settings,
+ *                                   CMS pages, laws & conventions, links, the 17 IMO-listed yards,
+ *                                   year-wise statistics, leadership, news & press, publications
+ *                                   (external links) and the photo gallery.
+ *   supabase/seed/02_demo_data.sql  ILLUSTRATIVE vessels, synthesised tides, member registry and
+ *                                   sample minutes. For demos/staging only.
  *
  *   npm run seed:generate
  */
@@ -75,11 +77,16 @@ const settingsSql = `-- site_settings (singleton)\nupdate public.site_settings s
   .map((c) => `  ${c} = ${literal(settings[c])}`)
   .join(",\n")}\nwhere id = 1;\n`;
 
-const contentTables: TableName[] = ["pages", "compliance_items", "links"];
+const documents = (fixtures.documents as unknown as Row[]).filter((d) => !d.file_path);
+
+const contentTables: TableName[] = [
+  "pages", "compliance_items", "links", "yards", "industry_statistics", "committee_members",
+  "posts", "documents", "albums", "photos",
+];
 const content =
   header(
     "BSBRA — starting content",
-    "Recommended for every environment. Facts are from public sources; verify before launch and\n-- replace the BSRB link (Admin → Site settings) with the Board's official website.",
+    "Recommended for every environment. Facts are from public sources (see src/lib/demo/data.ts);\n-- review in the admin before launch and replace the BSRB link with the Board's official website.",
   ) +
   "begin;\n\n" +
   withoutAudit(
@@ -89,40 +96,36 @@ const content =
       insert("pages", fixtures.pages as unknown as Row[]),
       insert("compliance_items", fixtures.compliance_items as unknown as Row[]),
       insert("links", fixtures.links as unknown as Row[]),
+      insert("yards", fixtures.yards as unknown as Row[]),
+      insert("industry_statistics", fixtures.industry_statistics as unknown as Row[]),
+      insert("committee_members", fixtures.committee_members as unknown as Row[]),
+      insert("posts", fixtures.posts as unknown as Row[]),
+      insert("documents", documents),
+      insert("albums", fixtures.albums as unknown as Row[]),
+      insert("photos", fixtures.photos as unknown as Row[]),
     ].join("\n"),
   ) +
   "\ncommit;\n";
 writeFileSync(join(OUT, "01_content.sql"), content);
 
 // -------------------------------------------------------------- 02 demo data
-const documents = (fixtures.documents as unknown as Row[]).filter((d) => !d.file_path);
 const minutes = (fixtures.meeting_minutes as unknown as Row[]).map((m) => ({ ...m, file_path: null, file_name: null, file_size: null, mime_type: null }));
 
-const demoTables: TableName[] = [
-  "yards", "members", "committee_members", "past_presidents", "posts", "documents", "meeting_minutes",
-  "industry_statistics", "labour_statistics", "vessels", "albums", "photos", "tide_entries",
-];
+const demoTables: TableName[] = ["members", "past_presidents", "meeting_minutes", "labour_statistics", "vessels", "tide_entries"];
 const demo =
   header(
     "BSBRA — ILLUSTRATIVE demo data",
-    "Sample yards (fictional names), vessels (IMO-format numbers in the unused 1xxxxxx range),\n-- statistics and synthesised tides. Use for demos and staging only — NOT for production.",
+    "Sample vessels (fictional names, IMO-format numbers in the unused 1xxxxxx range, not linked to\n-- any yard), synthesised tides, a member registry and sample minutes. Run after 01_content.sql.\n-- Use for demos and staging only — NOT for production.",
   ) +
   "begin;\n\n" +
   withoutAudit(
     demoTables,
     [
-      insert("yards", fixtures.yards as unknown as Row[]),
       insert("members", fixtures.members as unknown as Row[]),
-      insert("committee_members", fixtures.committee_members as unknown as Row[]),
       insert("past_presidents", fixtures.past_presidents as unknown as Row[]),
-      insert("posts", fixtures.posts as unknown as Row[]),
-      insert("documents", documents),
       insert("meeting_minutes", minutes),
-      insert("industry_statistics", fixtures.industry_statistics as unknown as Row[]),
       insert("labour_statistics", fixtures.labour_statistics as unknown as Row[]),
       insert("vessels", fixtures.vessels as unknown as Row[]),
-      insert("albums", fixtures.albums as unknown as Row[]),
-      insert("photos", fixtures.photos as unknown as Row[]),
       insert("tide_entries", fixtures.tide_entries as unknown as Row[]),
     ].join("\n"),
   ) +
@@ -130,8 +133,8 @@ const demo =
 writeFileSync(join(OUT, "02_demo_data.sql"), demo);
 
 console.log(
-  `Wrote supabase/seed/01_content.sql (${fixtures.pages.length} pages, ${fixtures.compliance_items.length} compliance items, ${fixtures.links.length} links)`,
+  `Wrote supabase/seed/01_content.sql (${fixtures.pages.length} pages, ${fixtures.yards.length} yards, ${fixtures.posts.length} posts, ${fixtures.photos.length} photos)`,
 );
 console.log(
-  `Wrote supabase/seed/02_demo_data.sql (${fixtures.yards.length} yards, ${fixtures.vessels.length} vessels, ${fixtures.posts.length} posts, ${fixtures.tide_entries.length} tide entries)`,
+  `Wrote supabase/seed/02_demo_data.sql (${fixtures.vessels.length} vessels, ${fixtures.tide_entries.length} tide entries)`,
 );

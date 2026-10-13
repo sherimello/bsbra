@@ -216,7 +216,7 @@ export function PhotoGrid({
 
             <div className="p-5 text-center">
               <p className="text-[0.9375rem]">{current.caption}</p>
-              {current.credit && <p className="mt-1 text-[0.75rem] text-white/50">© {current.credit}</p>}
+              {current.credit && <p className="mt-1 text-[0.75rem] text-white/50">{current.credit}</p>}
             </div>
           </m.div>
         )}

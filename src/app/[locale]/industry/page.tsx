@@ -41,6 +41,22 @@ export default async function IndustryPage({ params }: PageProps<"/[locale]/indu
   const previous = stats.at(-2);
   const totalMix = mix.reduce((a, m) => a + m.vessels, 0);
   const vsLabel = previous ? `${s.vsPrevious} (${localizeDigits(locale, previous.year)})` : undefined;
+  // Only show measures that have actually been published.
+  const hasSeries = (pick: (r: (typeof stats)[number]) => number | null) => stats.filter((r) => pick(r) != null).length >= 2;
+  const showLdt = hasSeries((r) => r.total_ldt);
+  const showYards = hasSeries((r) => r.active_yards) || hasSeries((r) => r.green_yards);
+  const showShare = hasSeries((r) => r.global_share_percent);
+  const columns = (
+    [
+      ["vessels_recycled", s.colVessels],
+      ["vessels_beached", s.colBeached],
+      ["total_ldt", s.colLdt],
+      ["active_yards", s.colYards],
+      ["green_yards", s.colGreen],
+      ["workers_employed", s.colWorkers],
+      ["global_share_percent", s.colShare],
+    ] as const
+  ).filter(([key]) => stats.some((r) => r[key] != null));
 
   return (
     <>
@@ -71,8 +87,10 @@ export default async function IndustryPage({ params }: PageProps<"/[locale]/indu
                 { label: s.kpiLdt, value: latest.total_ldt, prev: previous?.total_ldt, compact: true },
                 { label: s.kpiYards, value: latest.active_yards, prev: previous?.active_yards },
                 { label: s.kpiGreen, value: latest.green_yards, prev: previous?.green_yards },
-                { label: s.kpiShare, value: latest.global_share_percent, prev: previous?.global_share_percent, suffix: "%" },
-              ].map((k) => (
+                { label: s.kpiShare, value: latest.global_share_percent, prev: previous?.global_share_percent, suffix: "%", digits: 1 },
+              ]
+                .filter((k) => k.value != null)
+                .map((k) => (
                 <RevealItem key={k.label}>
                   <StatTile
                     label={k.label}
@@ -81,6 +99,7 @@ export default async function IndustryPage({ params }: PageProps<"/[locale]/indu
                     locale={locale}
                     compact={k.compact}
                     suffix={k.suffix}
+                    fractionDigits={k.digits}
                     deltaLabel={vsLabel ? "" : undefined}
                     className="h-full"
                   />
@@ -101,6 +120,7 @@ export default async function IndustryPage({ params }: PageProps<"/[locale]/indu
                 />
               </ChartCard>
             </Reveal>
+            {showLdt && (
             <Reveal delay={0.05}>
               <ChartCard title={s.chartLdt}>
                 <LineChart
@@ -112,6 +132,22 @@ export default async function IndustryPage({ params }: PageProps<"/[locale]/indu
                 />
               </ChartCard>
             </Reveal>
+            )}
+            {showShare && (
+              <Reveal delay={0.05}>
+                <ChartCard title={s.kpiShare} note={s.shareNote}>
+                  <ColumnChart
+                    locale={locale}
+                    ariaLabel={s.kpiShare}
+                    series={[{ key: "share", label: s.colShare, color: "var(--chart-2)" }]}
+                    data={stats
+                      .filter((r) => r.global_share_percent != null)
+                      .map((r) => ({ label: r.year, values: { share: r.global_share_percent } }))}
+                  />
+                </ChartCard>
+              </Reveal>
+            )}
+            {showYards && (
             <Reveal>
               <ChartCard title={s.chartYards}>
                 <LineChart
@@ -125,6 +161,8 @@ export default async function IndustryPage({ params }: PageProps<"/[locale]/indu
                 />
               </ChartCard>
             </Reveal>
+            )}
+            {totalMix > 0 && (
             <Reveal delay={0.05}>
               <ChartCard title={s.chartMix} note={s.chartMixNote}>
                 <HBarChart
@@ -135,6 +173,7 @@ export default async function IndustryPage({ params }: PageProps<"/[locale]/indu
                 />
               </ChartCard>
             </Reveal>
+            )}
           </Container>
 
           <Container className="pt-6 pb-24">
@@ -147,13 +186,11 @@ export default async function IndustryPage({ params }: PageProps<"/[locale]/indu
                 <thead>
                   <tr>
                     <Th>{s.colYear}</Th>
-                    <Th numeric>{s.colVessels}</Th>
-                    <Th numeric>{s.colBeached}</Th>
-                    <Th numeric>{s.colLdt}</Th>
-                    <Th numeric>{s.colYards}</Th>
-                    <Th numeric>{s.colGreen}</Th>
-                    <Th numeric>{s.colWorkers}</Th>
-                    <Th numeric>{s.colShare}</Th>
+                    {columns.map(([key, label]) => (
+                      <Th key={key} numeric>
+                        {label}
+                      </Th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
@@ -163,13 +200,15 @@ export default async function IndustryPage({ params }: PageProps<"/[locale]/indu
                         {localizeDigits(locale, r.year)}
                         {r.notes_en && <span className="mt-0.5 block text-[0.75rem] font-normal text-fg-subtle">{tr(r, "notes", locale)}</span>}
                       </Td>
-                      <Td numeric>{formatNumber(locale, r.vessels_recycled)}</Td>
-                      <Td numeric>{formatNumber(locale, r.vessels_beached)}</Td>
-                      <Td numeric>{formatNumber(locale, r.total_ldt)}</Td>
-                      <Td numeric>{formatNumber(locale, r.active_yards)}</Td>
-                      <Td numeric>{formatNumber(locale, r.green_yards)}</Td>
-                      <Td numeric>{formatNumber(locale, r.workers_employed)}</Td>
-                      <Td numeric>{r.global_share_percent === null ? "—" : `${formatNumber(locale, r.global_share_percent)}%`}</Td>
+                      {columns.map(([key]) => (
+                        <Td key={key} numeric>
+                          {r[key] == null
+                            ? "—"
+                            : key === "global_share_percent"
+                              ? `${formatNumber(locale, r[key])}%`
+                              : formatNumber(locale, r[key])}
+                        </Td>
+                      ))}
                     </Tr>
                   ))}
                 </tbody>

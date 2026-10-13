@@ -67,7 +67,7 @@ export function PostCard({
               alt=""
               seed={post.slug}
               sizes="(min-width: 1024px) 15vw, 40vw"
-              className="transition-transform duration-[1.6s] ease-[var(--ease-out-quint)] group-hover:scale-[1.04]"
+              className="transition-transform duration-700 ease-[var(--ease-out-quint)] group-hover:scale-[1.04]"
             />
           </div>
           <div>
@@ -101,7 +101,7 @@ export function PostCard({
             alt=""
             seed={post.slug}
             sizes={variant === "feature" ? "(min-width: 1024px) 60vw, 100vw" : "(min-width: 1024px) 30vw, 100vw"}
-            className="transition-transform duration-[1.6s] ease-[var(--ease-out-quint)] group-hover:scale-[1.035]"
+            className="transition-transform duration-700 ease-[var(--ease-out-quint)] group-hover:scale-[1.04]"
           />
         </div>
         <div className="flex flex-1 flex-col pt-5">

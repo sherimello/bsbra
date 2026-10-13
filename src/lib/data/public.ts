@@ -167,6 +167,20 @@ export async function getPostSlugs(limit = 20): Promise<string[]> {
 // ---------------------------------------------------------------------------
 // Leadership
 // ---------------------------------------------------------------------------
+const LEADERSHIP_PHOTO_MAP: Record<string, string> = {
+  // Current Committee & Advisors
+  "Mohammad Mohsin Chowdhury": "/photos/mohammed-mohsin-chowdhury.jpg",
+  "Alhaj Showkat Ali Chowdhury": "/photos/showkat-ali-chowdhury.jpg",
+  "Md. Showkat Ali Chowdhury": "/photos/showkat-ali-chowdhury.jpg",
+  // Past Presidents
+  "Mohammed Zahirul Islam (Rinku)": "/photos/mohammed-zahirul-islam.jpg",
+  "Mohammad Zahirul Islam": "/photos/mohammed-zahirul-islam.jpg",
+  "Alhaj Mohammad Abu Taher": "/photos/alhaj-mohammad-abu-taher.jpg",
+  "Mohammad Abu Taher": "/photos/alhaj-mohammad-abu-taher.jpg",
+  "Alhaj Md. Shahjahan": "/photos/alhaj-md-shahjahan.jpg",
+  "Md. Shahjahan": "/photos/alhaj-md-shahjahan.jpg",
+};
+
 export async function getCommittee() {
   "use cache";
   cacheLife("hours");
@@ -176,7 +190,10 @@ export async function getCommittee() {
     filters: [{ col: "is_current", op: "eq", value: true }],
     order: [{ col: "sort_order" }, { col: "name_en" }],
   });
-  return rows;
+  return rows.map((m) => ({
+    ...m,
+    photo: m.photo ?? LEADERSHIP_PHOTO_MAP[m.name_en] ?? null,
+  }));
 }
 
 export async function getPastPresidents() {
@@ -187,7 +204,10 @@ export async function getPastPresidents() {
     table: "past_presidents",
     order: [{ col: "term_start", ascending: false }, { col: "sort_order" }],
   });
-  return rows;
+  return rows.map((p) => ({
+    ...p,
+    photo: p.photo ?? LEADERSHIP_PHOTO_MAP[p.name_en] ?? null,
+  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -212,6 +232,87 @@ export async function getLabourStatistics() {
 // ---------------------------------------------------------------------------
 // Yards & vessels
 // ---------------------------------------------------------------------------
+const YARD_PHOTO_MAP: Record<string, { cover: string; gallery: string[] }> = {
+  "php-ship-breaking-recycling": {
+    cover: "/photos/imo-green-yard.jpg",
+    gallery: ["/photos/imo-green-yard.jpg", "/photos/imo-green-recycling-sustainable.jpg", "/photos/bulk-carrier-recycling.jpg"],
+  },
+  "kabir-steel": {
+    cover: "/photos/ksrm-yard-visit-2025.jpg",
+    gallery: ["/photos/ksrm-yard-visit-2025.jpg", "/photos/sitakunda-cranes.jpg", "/photos/chattogram-yard.jpg"],
+  },
+  "sn-corporation-unit-1": {
+    cover: "/photos/bulk-carrier-recycling.jpg",
+    gallery: ["/photos/bulk-carrier-recycling.jpg", "/photos/chattogram-yard.jpg", "/photos/beached-bow.jpg"],
+  },
+  "kr-ship-recycling-yard": {
+    cover: "/photos/imo-green-recycling-sustainable.jpg",
+    gallery: ["/photos/imo-green-recycling-sustainable.jpg", "/photos/sitakunda-cranes.jpg", "/photos/bhatiary-gas-cutting.jpg"],
+  },
+  "arab-ship-breaking-recycling": {
+    cover: "/photos/sitakunda-cranes.jpg",
+    gallery: ["/photos/sitakunda-cranes.jpg", "/photos/bulk-carrier-recycling.jpg", "/photos/sitakunda-sunset.jpg"],
+  },
+  "hm-shipping-lines": {
+    cover: "/photos/chittagong-demolition-yard.jpg",
+    gallery: ["/photos/chittagong-demolition-yard.jpg", "/photos/shipbreaking-bangladesh-yard.jpg", "/photos/beached-bow.jpg"],
+  },
+  "sn-corporation-unit-2": {
+    cover: "/photos/chattogram-yard.jpg",
+    gallery: ["/photos/chattogram-yard.jpg", "/photos/bulk-carrier-recycling.jpg", "/photos/jafrabad-shipbreaking-1.jpg"],
+  },
+  "sn-corporation-unit-3": {
+    cover: "/photos/beached-bow.jpg",
+    gallery: ["/photos/beached-bow.jpg", "/photos/jafrabad-shipbreaking-5.jpg", "/photos/sitakunda-cranes.jpg"],
+  },
+  "ferdous-steel-ship-recycling": {
+    cover: "/photos/ziri-subedar-inspection-1.jpg",
+    gallery: ["/photos/ziri-subedar-inspection-1.jpg", "/photos/ziri-subedar-inspection-2.jpg", "/photos/bhatiary-gas-cutting.jpg"],
+  },
+  "nb-steel": {
+    cover: "/photos/jafrabad-shipbreaking-1.jpg",
+    gallery: ["/photos/jafrabad-shipbreaking-1.jpg", "/photos/jafrabad-shipbreaking-5.jpg", "/photos/chattogram-yard.jpg"],
+  },
+  "mak-corporation": {
+    cover: "/photos/bhatiary-gas-cutting.jpg",
+    gallery: ["/photos/bhatiary-gas-cutting.jpg", "/photos/sitakunda-cranes.jpg", "/photos/sitakunda-sunset.jpg"],
+  },
+  "kr-steel": {
+    cover: "/photos/jafrabad-shipbreaking-5.jpg",
+    gallery: ["/photos/jafrabad-shipbreaking-5.jpg", "/photos/imo-green-recycling-sustainable.jpg", "/photos/chattogram-yard.jpg"],
+  },
+  "jamuna-ship-breakers": {
+    cover: "/photos/shipbreaking-bangladesh-yard.jpg",
+    gallery: ["/photos/shipbreaking-bangladesh-yard.jpg", "/photos/beached-bow.jpg", "/photos/sitakunda-cranes.jpg"],
+  },
+  "janata-steel": {
+    cover: "/photos/ziri-subedar-inspection-2.jpg",
+    gallery: ["/photos/ziri-subedar-inspection-2.jpg", "/photos/ziri-subedar-inspection-1.jpg", "/photos/bhatiary-gas-cutting.jpg"],
+  },
+  "taher-and-company": {
+    cover: "/photos/sitakunda-sunset.jpg",
+    gallery: ["/photos/sitakunda-sunset.jpg", "/photos/sitakunda-cranes.jpg", "/photos/beached-bow.jpg"],
+  },
+  "bob-recyclers": {
+    cover: "/photos/bow-monochrome.jpg",
+    gallery: ["/photos/bow-monochrome.jpg", "/photos/chattogram-yard.jpg", "/photos/chittagong-demolition-yard.jpg"],
+  },
+  "asadi-steel-enterprise": {
+    cover: "/photos/sitakunda-coast-aster.jpg",
+    gallery: ["/photos/sitakunda-coast-aster.jpg", "/photos/imo-green-yard.jpg", "/photos/bulk-carrier-recycling.jpg"],
+  },
+};
+
+function sanitizeYardRecord(yard: Yard): Yard {
+  const isSvgOrArt = !yard.cover_image || yard.cover_image.includes("/art/") || yard.cover_image.endsWith(".svg");
+  const fallback = YARD_PHOTO_MAP[yard.slug];
+  const cover_image = isSvgOrArt ? (fallback?.cover ?? "/photos/imo-green-yard.jpg") : yard.cover_image;
+  const gallery = (!yard.gallery || yard.gallery.length === 0 || yard.gallery.some((g) => g.includes("/art/")))
+    ? (fallback?.gallery ?? [cover_image])
+    : yard.gallery;
+  return { ...yard, cover_image, gallery };
+}
+
 export async function getYards(statuses?: YardStatus[]): Promise<Yard[]> {
   "use cache";
   cacheLife("hours");
@@ -221,14 +322,15 @@ export async function getYards(statuses?: YardStatus[]): Promise<Yard[]> {
     filters: statuses?.length ? [{ col: "status", op: "in", value: statuses }] : [],
     order: [{ col: "sort_order" }, { col: "name_en" }],
   });
-  return rows;
+  return rows.map(sanitizeYardRecord);
 }
 
 export async function getYard(slug: string): Promise<Yard | null> {
   "use cache";
   cacheLife("hours");
   cacheTag("yards");
-  return publicReader().first("yards", [{ col: "slug", op: "eq", value: slug }]);
+  const row = await publicReader().first("yards", [{ col: "slug", op: "eq", value: slug }]);
+  return row ? sanitizeYardRecord(row) : null;
 }
 
 export interface YardSummary {
